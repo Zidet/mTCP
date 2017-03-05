@@ -4,7 +4,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   File          : mtcp_common.h
-//   Description   : This is the interface of the common funcions for the 
+//   Description   : This is the interface of the common funcions for the
 //                   CSCI 4430 project
 //   Author        : LIU Yide, Zhang Sibin, LIU Cheng-Tsung
 //   Last Modified : 25/02/2017
@@ -31,11 +31,17 @@ typedef struct mPacket{
     char buffer[1000];
 }mTCPPacket;
 
-    
+
+typedef struct packa{
+  int socket_fd;
+  void *buf;
+  size_t buflen;
+  struct sockaddr *dest_addr;
+}threadpack;
 
 /*
    mTCP header type specification
-   
+
    Bits  Segments
    ----- --------------
    0-4   Type variables

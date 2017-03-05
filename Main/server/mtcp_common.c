@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 //   File          : mtcp_common.c
-//   Description   : This is the implementation of the common funcions for the 
+//   Description   : This is the implementation of the common funcions for the
 //                   CSCI 4430 project
 //   Author        : LIU Yide, Zhang Sibin, LIU Cheng-Tsung
 //   Last Modified : 25/02/2017
@@ -55,7 +55,7 @@ mTCPHeader pack_header(int32_t type, int32_t rest){
 int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *rest){
     *type = (*head >> 28) & 0xF;
     *rest = *head & 0xFFFFFFF;
-    
+
     if(type < 0 || type > 5){
         fprintf(stderr, "Unpack_header fail: Invalid type retrieved\n");
         return -1;
@@ -63,29 +63,3 @@ int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *rest){
 
     return 0;
 }
-
-
-// The following functions should vary in client and sever sides
-// and should not included in common
-///////////////////////////////////////////////////////////////////////////////
-//
-//   Function      : mTCP_send
-//   Description   : Send bytes to socket_fd from buffer
-//
-//   Inputs        : socket fd, buffer, # bytes
-//   Outputs       : 0 success, -1 fail
-int32_t mTCP_send(int32_t sock_fd, mTCPPacket *packet, int32_t len){
-    sendto(sock_fd,packet,len);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-//   Function      : mTCP_receive
-//   Description   : Receive bytes from a socket_fd to buffer
-//
-//   Inputs        : socket fd, buffer, # bytes
-//   Outputs       : 0 success, -1 fail
-int32_t mTCP_receive(int32_t sock_fd, );
-
-
-
