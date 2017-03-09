@@ -34,7 +34,7 @@ typedef struct mPacket{
 
 typedef struct packa{
   int socket_fd;
-  void *buf;
+  char *buf;
   size_t buflen;
   struct sockaddr *dest_addr;
 }threadpack;
@@ -62,10 +62,10 @@ typedef enum{
 // Functions
 
 // Rack the mTCP header for the packet
-mTCPHeader pack_header(int32_t type, int32_t rest);
+mTCPHeader pack_header(int32_t type, int32_t seq);
 
 // Unpack the mTCP header and retrieve information
-int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t rest);
+int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq);
 
 
 #endif

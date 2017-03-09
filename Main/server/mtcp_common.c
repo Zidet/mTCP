@@ -27,14 +27,17 @@
 //
 //   Inputs        : Type value, SEQ/ACK info
 //   Outputs       : mTCP Header
-mTCPHeader pack_header(int32_t type, int32_t rest){
+mTCPHeader pack_header(int32_t type, int32_t seq){
     // Temp var
     mTCPHeader head;
     int32_t mt,mr;
 
+    // convert seq to B-Endian
+    seq = htonl(seq);
+
     // Pack
     mt = (type & 0xF) << 28;
-    mr = (rest & 0xFFFFFF);
+    mr = (seq & 0xFFFFFF);
     head = mt | mr;
 
     if(type < 0 || type > 5){
@@ -52,9 +55,10 @@ mTCPHeader pack_header(int32_t type, int32_t rest){
 //
 //   Inputs        : mTCPheader
 //   Outputs       : 0 success, -1 fail
-int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *rest){
+int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq){
     *type = (*head >> 28) & 0xF;
-    *rest = *head & 0xFFFFFFF;
+    *seq = *head & 0xFFFFFFF;
+    *seq = ntohl(*seq);
 
     if(type < 0 || type > 5){
         fprintf(stderr, "Unpack_header fail: Invalid type retrieved\n");
