@@ -32,11 +32,6 @@ typedef struct mPacket{
 }mTCPPacket;
 
 
-typedef struct packa{
-  int socket_fd;
-  struct sockaddr *dest_addr;
-}threadpack;
-
 /*
    mTCP header type specification
 

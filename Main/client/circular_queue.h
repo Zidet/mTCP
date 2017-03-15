@@ -5,7 +5,7 @@
 
 #define BUFFSIZE 1024*8
 
-typedef myqueue{
+typedef struct myqueue{
   int front,rear;
   char buffer[BUFFSIZE];
 }QUEUE;
@@ -21,7 +21,7 @@ int enqueue(QUEUE *q, char data);
 int dequeue(QUEUE *q);
 
 //  Manipulate send buffer using enenqueue
-int writeSendBuff(QUEUE *q, const char* data);
+int writeSendBuff(QUEUE *q, const char* data, int length);
 
 
 // Wipe out data from the beginning

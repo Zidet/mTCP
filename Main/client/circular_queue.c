@@ -48,12 +48,11 @@ int dequeue(QUEUE *q){
   else
     q->front=q->front+1%BUFFSIZE;
 
-  return 0;
+  return data;
 }
 
 //  Manipulate send buffer using enenqueue
-int writeSendBuff(QUEUE *q, const char* data){
-  int length = strlen(data);
+int writeSendBuff(QUEUE *q, const char* data, int length){
   int i = 0;
   for(i = 0; i < length; i++){
     if(enqueue(q, data[i])){
@@ -68,7 +67,7 @@ int writeSendBuff(QUEUE *q, const char* data){
 int wipeSendBuff(QUEUE *q, int length){
   int i = 0;
   for(i = 0; i < length; i++){
-    if(dequeue(q, char data)){
+    if(dequeue(q)==-1){
       return -1;
     }
   }
