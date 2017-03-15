@@ -91,22 +91,22 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
 
 /* Close Function Call (mtcp Version) */
 void mtcp_close(int socket_fd){
-  // change state to 4-way
-  pthread_mutex_lock(&info_mutex);
-  state = 3;
-  pthread_mutex_unlock(&info_mutex);
+    // change state to 4-way
+    pthread_mutex_lock(&info_mutex);
+    state = 3;
+    pthread_mutex_unlock(&info_mutex);
 
-  // wake up send thread
-  pthread_mutex_lock(&send_thread_sig_mutex);
-  pthread_cond_signal(&send_thread_sig);
-  pthread_mutex_unlock(&send_thread_sig_mutex);
+    // wake up send thread
+    pthread_mutex_lock(&send_thread_sig_mutex);
+    pthread_cond_signal(&send_thread_sig);
+    pthread_mutex_unlock(&send_thread_sig_mutex);
 
-  // wait until close(4-way handshake) success
-  pthread_mutex_lock(&app_thread_sig_mutex);
-  pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
-  pthread_mutex_unlock(&app_thread_sig_mutex);
+    // wait until close(4-way handshake) success
+    pthread_mutex_lock(&app_thread_sig_mutex);
+    pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
+    pthread_mutex_unlock(&app_thread_sig_mutex);
 
-  return;
+    return;
 }
 
 static void *send_thread(){
@@ -165,40 +165,40 @@ static void *send_thread(){
         }
         // data transmission
         else if(state == 2){
-          // if data was lost, resend
-          // error-proned: is there a better condition?
-          if(local_lastreceive != mTCP_ACK || local_ack<=local_seq){
-            // resemble data packet
-            header = pack_header(mTCP_DATA,local_ack);
-            packet->header = header;
-            memcpy(packet->buffer,buf,1000);
-              sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
-                      sizeof(*dest_addr));
-          }
-          // send new data
-          else{
-              header = pack_header(mTCP_DATA,local_ack);
-              packet->header = header;
-              memset(packet->buffer, 0,1000);
-              memset(buf, 0, 1000);
-              // Manipulate buffer
-              pthread_mutex_lock(&info_mutex);
-              SEQ = ACK; // update SEQ to lastest
-              int j = 0;
-              for(j = 0; j< 1000; j++){
-                // read from mtcp_buffer
-                // until it exhausts
-                int tmp = dequeue(mtcp_buffer);
-                if(tmp == -1){
-                  break;
+            // if data was lost, resend
+            // error-proned: is there a better condition?
+            if(local_lastreceive != mTCP_ACK || local_ack<=local_seq){
+                // resemble data packet
+                header = pack_header(mTCP_DATA,local_ack);
+                packet->header = header;
+                memcpy(packet->buffer,buf,1000);
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr));
+            }
+            // send new data
+            else{
+                header = pack_header(mTCP_DATA,local_ack);
+                packet->header = header;
+                memset(packet->buffer, 0,1000);
+                memset(buf, 0, 1000);
+                // Manipulate buffer
+                pthread_mutex_lock(&info_mutex);
+                SEQ = ACK; // update SEQ to lastest
+                int j = 0;
+                for(j = 0; j< 1000; j++){
+                    // read from mtcp_buffer
+                    // until it exhausts
+                    int tmp = dequeue(mtcp_buffer);
+                    if(tmp == -1){
+                        break;
+                    }
+                    packet->buffer[j]=tmp;
                 }
-                packet->buffer[j]=tmp;
-              }
-              memcpy(buf,packet->buffer,sizeof(packet->buffer));
-              pthread_mutex_unlock(&info_mutex);
-              sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
-                      sizeof(*dest_addr));
-          }
+                memcpy(buf,packet->buffer,sizeof(packet->buffer));
+                pthread_mutex_unlock(&info_mutex);
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr));
+            }
         }
         else if(state == 3){
             // if FIN_ACK not received
@@ -208,7 +208,7 @@ static void *send_thread(){
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
-      sockaddr *)dest_addr, sizeof(*dest_addr));
+                            sockaddr *)dest_addr, sizeof(*dest_addr));
             }
             else if(local_lastreceive == mTCP_FIN_ACK){
                 // if FIN-ACK received, send ACK
