@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include "mtcp_common.h"
 #include "mtcp_client.h"
+#include "circular_queue.h"
 
 /* -------------------- Global Variables -------------------- */
 
@@ -34,15 +35,19 @@ int32_t SEQ = 0;
 int32_t& ACK = SEQ;
 int32_t lastreceive = -1;
 
-threadpack pack;
-
 /* Connect Function Call (mtcp Version) */
 void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
+/*
     // fill info for pack
     pthread_mutex_lock(&info_mutex);
     pack.socket_fd = socket_fd;
     pack.sockaddr = (struct sockaddr*) server_addr;
     pthread_mutex_unlock(*info_mutex);
+*/
+    // change state to 3-way handshake
+    pthread_mutex_lock(&info_mutex);
+    state = 1;
+    pthread_mutex_unlock(&info_mutex);
 
     // create Sending & Receiving thread
     pthread_create(&send_thread_pid, NULL,
@@ -50,9 +55,13 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     pthread_create(&recv_thread_pid, NULL,
             (void * (*)(void *))receive_thread,&pack);
 
-    // wait until connect success
+    // wake up sending thread
+    pthread_mutex_lock(&send_thread_sig_mutex);
+    pthread_cond_signal(&send_thread_sig);
+    pthread_mutex_unlock(&send_thread_sig_mutex);
+
+    // wait until connect(3-way handshake) success
     pthread_mutex_lock(&app_thread_sig_mutex);
-    state = 0;
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
 
@@ -64,21 +73,16 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     char* buff = (char*)malloc(buf_len);
     // fill in the pack
     pthread_mutex_lock(&info_mutex);
-    pack.socket_fd = socket_fd;
-    pack.buf = buf;
-    pack.buflen = buf_len;
     state = 2;
     pthread_mutex_unlock(&info_mutex);
 
+    // wake up sending thread
     pthread_mutex_lock(&send_thread_sig_mutex);
     pthread_cond_signal(&send_thread_sig);
     pthread_mutex_unlock(&send_thread_sig_mutex);
-    // none-blocking write?
-    /*
-    pthread_mutex_lock(&app_thread_sig_mutex);
-    pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
-    pthread_mutex_unlock(&app_thread_sig_mutex);
-    */
+    // none-blocking write!
+    // return immediately
+    return buf_len;
 }
 
 /* Close Function Call (mtcp Version) */
@@ -92,7 +96,7 @@ void mtcp_close(int socket_fd){
   pthread_mutex_unlock(&send_thread_sig_mutex);
 }
 
-static void *send_thread(threadpack* tosend){
+static void *send_thread(){
     int32_t shutdown = 0;
     struct timespec timeToWait;
     struct timespec now;

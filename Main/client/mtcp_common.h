@@ -34,8 +34,6 @@ typedef struct mPacket{
 
 typedef struct packa{
   int socket_fd;
-  char *buf;
-  size_t buflen;
   struct sockaddr *dest_addr;
 }threadpack;
 
