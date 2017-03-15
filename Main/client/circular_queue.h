@@ -12,7 +12,7 @@ typedef struct myqueue{
 
 QUEUE* createqueue();
 
-int isempty(struct queue*q);
+int isempty(QUEUE*q);
 
 int isfull(QUEUE*q);
 
