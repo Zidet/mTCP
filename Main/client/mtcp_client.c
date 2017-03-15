@@ -166,7 +166,7 @@ static void *send_thread(){
         // data transmission
         else if(state == 2){
           // if data was lost, resend
-          if(local_lastreceive != mTCP_ACK || local_ack<local_seq){
+          if(local_lastreceive != mTCP_ACK || local_ack<=local_seq){
             // resemble data packet
             header = pack_header(mTCP_DATA,local_ack);
             packet->header = header;
