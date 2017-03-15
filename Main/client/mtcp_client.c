@@ -113,7 +113,7 @@ static void *send_thread(){
     int32_t shutdown = 0;  // flag: shutdown? 1:0
     // struct for time control
     struct timespec timeToWait;
-    struct timespec now;
+    struct timeval now;
 
     mTCPHeader header = 0;
     unsigned char buf[MAX_BUF_SIZE]; // local buffer for send thread
@@ -207,8 +207,8 @@ static void *send_thread(){
                 header = pack_header(mTCP_FIN,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
-                        sizeof(*dest_addr));
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
+      sockaddr *)dest_addr, sizeof(*dest_addr));
             }
             else if(local_lastreceive == mTCP_FIN_ACK){
                 // if FIN-ACK received, send ACK
@@ -240,8 +240,9 @@ static void *receive_thread(){
         mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
         memset(buf, 0, MAX_BUF_SIZE);
+        socklen_t fromlen = sizeof(*dest_addr);
         length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
-                (struct sockaddr *)dest_addr, sizeof(*dest_addr));
+                (struct sockaddr *)dest_addr, &fromlen);
         if(length <= 0){
             fprintf(stderr,"Error on receiving data\n");
         }
