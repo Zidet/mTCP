@@ -52,7 +52,7 @@ int dequeue(QUEUE *q){
 }
 
 //  Manipulate send buffer using enenqueue
-int writeSendBuff(QUEUE *q, const char* data, int length){
+int writeSendBuff(QUEUE *q, unsigned char* data, int length){
   int i = 0;
   for(i = 0; i < length; i++){
     if(enqueue(q, data[i])){
