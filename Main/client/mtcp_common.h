@@ -28,7 +28,7 @@ typedef int32_t mTCPHeader;  // Header for the mTCP protocol
 
 typedef struct mPacket{
     mTCPHeader header;
-    char buffer[1000];
+    unsigned char buffer[1000];
 }mTCPPacket;
 
 

@@ -38,23 +38,24 @@ int32_t sfd;  // socket_fd
 struct sockaddr_in *dest_addr; // server addr
 
 // sending buffer
-QUEUE* mtcp_buffer = (QUEUE*) createqueue();
+QUEUE* mtcp_buffer = NULL;
 
 /* Connect Function Call (mtcp Version) */
 void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     // change state to 3-way handshake
     // store server_addr & socket_fd
     pthread_mutex_lock(&info_mutex);
+    mtcp_buffer = (QUEUE*) createqueue();
     sfd = socket_fd;
-    memcpy(dest_addr,server_addr,sizeof(server_addr));
+    memcpy(dest_addr,server_addr,sizeof(*server_addr));
     state = 1;
     pthread_mutex_unlock(&info_mutex);
 
     // create Sending & receive thread
     pthread_create(&send_thread_pid, NULL,
-            (void * (*)(void *))send_thread,&pack);
+            (void * (*)(void *))send_thread,NULL);
     pthread_create(&recv_thread_pid, NULL,
-            (void * (*)(void *))receive_thread,&pack);
+            (void * (*)(void *))receive_thread,NULL);
 
     // wake up send thread
     pthread_mutex_lock(&send_thread_sig_mutex);
@@ -114,9 +115,8 @@ static void *send_thread(){
     struct timespec timeToWait;
     struct timespec now;
 
-    int32_t i = 0;
-    mTCPHeader header;
-    char buf[MAX_BUF_SIZE]; // local buffer for send thread
+    mTCPHeader header = 0;
+    unsigned char buf[MAX_BUF_SIZE]; // local buffer for send thread
     while(!shutdown){
         int32_t local_lastreceive = -1;
         int32_t local_seq = -1;
@@ -125,7 +125,7 @@ static void *send_thread(){
         mTCPPacket *packet = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         // stage one - sleep 1s
         gettimeofday(&now,NULL);
-        timeToWait.tv_sec = now.tv_sec+timeIns;
+        timeToWait.tv_sec = now.tv_sec+ 1;
         pthread_mutex_lock(&send_thread_sig_mutex);
         pthread_cond_timedwait(&send_thread_sig, &send_thread_sig_mutex, &timeToWait);
         pthread_mutex_unlock(&send_thread_sig_mutex);
@@ -146,7 +146,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_SYN, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
             }
             else if(local_lastreceive == mTCP_SYN_ACK){
@@ -155,7 +155,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);
@@ -171,7 +171,7 @@ static void *send_thread(){
             header = pack_header(mTCP_DATA,local_ack);
             packet->header = header;
             memcpy(packet->buffer,buf,1000);
-              sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
+              sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                       sizeof(*dest_addr));
           }
           // send new data
@@ -193,9 +193,9 @@ static void *send_thread(){
                 }
                 packet->buffer[j]=tmp;
               }
-              memcpy(buf,packet->buffer,sizeof(buffer));
+              memcpy(buf,packet->buffer,sizeof(packet->buffer));
               pthread_mutex_unlock(&info_mutex);
-              sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
+              sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                       sizeof(*dest_addr));
           }
         }
@@ -216,7 +216,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, dest_addr,
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 shutdown = 1;
             }
@@ -231,22 +231,22 @@ static void *receive_thread(){
     int32_t local_seq = -1;
     // local buffer for receive thread
     // it should be the received mtcp packet
-    char buf[MAX_BUF_SIZE];
+    unsigned char buf[MAX_BUF_SIZE];
     // local buffer for header, type and rest(ACK/SEQ)
-    mTCPHeader header;
+    mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
     while(!shutdown){
         mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
         memset(buf, 0, MAX_BUF_SIZE);
-        length = recvfrom(sfd,  buf, MAX_BUF_SIZE,
-                dest_addr, sizeof(*dest_addr));
+        length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
+                (struct sockaddr *)dest_addr, sizeof(*dest_addr));
         if(length <= 0){
             fprintf(stderr,"Error on receiving data\n");
         }
         // get the hearder and unpack
-        memcpy(header,buf,4);
-        unpack_header(header, &type, &rest);
+        memcpy(&header,buf,4);
+        unpack_header(&header, &type, &rest);
 
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
@@ -267,7 +267,7 @@ static void *receive_thread(){
                     fprintf(stderr,"Error on 3-way handshake\n");
                 }
             case 2: // data transmission
-                if(type == mTCP_ACK && rest > local_req){
+                if(type == mTCP_ACK && rest > local_seq){
                     // if ACK received,
                     // wake up send thread and send new data
                     // note that seq is changed in send thread to for maintanence
