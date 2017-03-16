@@ -9,11 +9,11 @@ QUEUE* createqueue(){
   return q;
 }
 
-int isempty(struct queue*q){
+int isempty(QUEUE *q){
   return(q->front==-1);
 }
 
-int isfull(QUEUE*q){
+int isfull(QUEUE *q){
   return((q->rear+1)%BUFFSIZE==q->front);
 }
 
@@ -32,6 +32,7 @@ int enqueue(QUEUE *q, char data){
     q->rear=q->rear+1%BUFFSIZE;
   }
   q->buffer[q->rear]=data;
+  return 0;
 }
 
 int dequeue(QUEUE *q){
