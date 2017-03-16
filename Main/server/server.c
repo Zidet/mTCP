@@ -49,11 +49,11 @@ int main(int argc, char **argv){
 	if( bind(sock_fd,(struct sockaddr*) &server_addr,sizeof(server_addr)) < 0 ){
 		fprintf(stderr, "%s (line %d): %s - bind():\n", __FILE__, __LINE__, __FUNCTION__);
 		fprintf(stderr, "\tBind Socket Error\n");
-        close(sock_fd);
+		close(sock_fd);
 		exit(1);
-    }
+	}
 
-    // Connect to the server with mTCP protocol
+	// Connect to the server with mTCP protocol
 	mtcp_accept(sock_fd, &client_addr);
 
 	fflush(stdout);
