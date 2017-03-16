@@ -46,8 +46,9 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     // store server_addr & socket_fd
     pthread_mutex_lock(&info_mutex);
     mtcp_buffer = (QUEUE*) createqueue();
+    dest_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
     sfd = socket_fd;
-    memcpy(dest_addr,server_addr,sizeof(*server_addr));
+    memcpy(dest_addr,server_addr,sizeof(struct sockaddr_in));
     state = 1;
     pthread_mutex_unlock(&info_mutex);
 
