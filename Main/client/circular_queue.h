@@ -5,8 +5,9 @@
 
 #define BUFFSIZE 1024*8
 
-typedef struct myqueue{
-  int front,rear;
+typedef struct queue{
+  int front;
+  int rear;
   char buffer[BUFFSIZE];
 }QUEUE;
 

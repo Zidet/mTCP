@@ -60,7 +60,7 @@ int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq){
     *seq = *head & 0xFFFFFFF;
     *seq = ntohl(*seq);
 
-    if(type < 0 || type > 5){
+    if(*type < 0 || *type > 5){
         fprintf(stderr, "Unpack_header fail: Invalid type retrieved\n");
         return -1;
     }
