@@ -37,7 +37,7 @@ mTCPHeader pack_header(int32_t type, int32_t seq){
 
     // Pack
     mt = (type & 0xF) << 28;
-    mr = (seq & 0xFFFFFF);
+    mr = (seq & 0xFFFFFFF);
     head = mt | mr;
 
     if(type < 0 || type > 5){
