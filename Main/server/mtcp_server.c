@@ -33,10 +33,19 @@ static void *receive_thread();
 
 void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
     //3-way-handshake
+    pthread_mutex_lock(&info_mutex);
     state=1;
+    pthread_mutex_unlock(&info_mutex);
     //create thread
     pthread_create(&send_thread_pid, NULL, (void * (*)(void *))receive_thread, NULL);
     pthread_create(&recv_thread_pid, NULL, (void * (*)(void *))send_thread, NULL);
+
+
+    // wake up send thread
+    pthread_mutex_lock(&send_thread_sig_mutex);
+    pthread_cond_signal(&send_thread_sig);
+    pthread_mutex_unlock(&send_thread_sig_mutex);
+
     //wait until accept success
     pthread_mutex_lock(&app_thread_sig_mutex);
     pthread_cond_wait(&app_thread_sig, &app_thread_sig_mutex);
