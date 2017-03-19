@@ -36,7 +36,7 @@ void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
     pthread_mutex_lock(&info_mutex);
     dest_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
     sfd = socket_fd;
-    memcpy(dest_addr,server_addr,sizeof(sturct sockaddr_in));
+    memcpy(dest_addr,server_addr,sizeof(struct sockaddr_in));
     state=1;
     pthread_mutex_unlock(&info_mutex);
     //create thread
