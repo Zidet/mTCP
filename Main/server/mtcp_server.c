@@ -34,6 +34,9 @@ static void *receive_thread();
 void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
     //3-way-handshake
     pthread_mutex_lock(&info_mutex);
+    dest_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+    sfd = socket_fd;
+    memcpy(dest_addr,server_addr,sizeof(sturct sockaddr_in));
     state=1;
     pthread_mutex_unlock(&info_mutex);
     //create thread
@@ -42,9 +45,9 @@ void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
 
 
     // wake up send thread
-    pthread_mutex_lock(&send_thread_sig_mutex);
-    pthread_cond_signal(&send_thread_sig);
-    pthread_mutex_unlock(&send_thread_sig_mutex);
+    //pthread_mutex_lock(&send_thread_sig_mutex);
+    //pthread_cond_signal(&send_thread_sig);
+    //pthread_mutex_unlock(&send_thread_sig_mutex);
 
     //wait until accept success
     pthread_mutex_lock(&app_thread_sig_mutex);
