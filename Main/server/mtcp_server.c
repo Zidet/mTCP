@@ -100,9 +100,9 @@ static void *send_thread(){
     int32_t local_ack=0;
     int32_t shutdown = 0;
     //int32_t local_seq;
-    mTCPPacket* packet = (mTCPPacket*) malloc(sizeof(mTCPPacket));
-    mTCPHeader header;
     while(!shutdown){
+      mTCPPacket* packet = (mTCPPacket*) malloc(sizeof(mTCPPacket));
+      mTCPHeader header;
       //sleep
       pthread_cond_wait(&send_thread_sig, &send_thread_sig_mutex);
       //check state
@@ -140,6 +140,7 @@ static void *send_thread(){
                 sizeof(*dest_addr));
         shutdown=1;
       }
+      free(packet);
     }
     pthread_exit(0);
 }
@@ -189,9 +190,10 @@ static void *receive_thread(){
                     fprintf(stderr,"Error on 3-way handshake at server\n");
                 }
             case 2: // data transmission
-                pthread_mutex_lock(&info_mutex);
                 if(type == mTCP_DATA){
+                    pthread_mutex_lock(&info_mutex);
                     SEQ=ACK;
+                    pthread_mutex_unlock(&info_mutex);
                     //wake up sending thread
                     pthread_mutex_lock(&send_thread_sig_mutex);
                     pthread_cond_signal(&send_thread_sig);
@@ -200,7 +202,6 @@ static void *receive_thread(){
                 else{
                 fprintf(stderr,"Error on data transmission at server\n");
                 }
-                pthread_mutex_unlock(&info_mutex);
 
             case 3: // 4-way handshake
                 if(type == mTCP_FIN){

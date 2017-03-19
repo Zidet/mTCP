@@ -248,6 +248,7 @@ static void *receive_thread(){
         length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
                 (struct sockaddr *)dest_addr, &fromlen);
         if(length <= 0){
+            continue;
             fprintf(stderr,"Error on receiving data\n");
         }
         // get the hearder and unpack
