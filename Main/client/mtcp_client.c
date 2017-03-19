@@ -260,37 +260,39 @@ static void *receive_thread(){
         ACK = rest;
         local_seq = SEQ;
         pthread_mutex_unlock(&info_mutex);
-        switch (state) {
-            case -1:
-                fprintf(stderr,"State not updated I bet");
-            case 1: // 3-way handshake
-                // unpack header
-                if(type == mTCP_SYN_ACK){
-                    // if SYN_ACK received, wake up send thread
-                    pthread_mutex_lock(&send_thread_sig_mutex);
-                    pthread_cond_signal(&send_thread_sig);
-                    pthread_mutex_unlock(&send_thread_sig_mutex);
-                }else{
-                    fprintf(stderr,"Error on 3-way handshake\n");
-                }
-            case 2: // data transmission
-                if(type == mTCP_ACK && rest > local_seq){
-                    // if ACK received,
-                    // wake up send thread and send new data
-                    // note that seq is changed in send thread to for maintanence
-                    pthread_mutex_lock(&send_thread_sig_mutex);
-                    pthread_cond_signal(&send_thread_sig);
-                    pthread_mutex_unlock(&send_thread_sig_mutex);
-                }
-            case 3: // 4-way handshake
-                if(type == mTCP_FIN_ACK){
-                    // if FIN_ACK received, wake up send thread for termination
-                    // terminate the thread
-                    pthread_mutex_lock(&send_thread_sig_mutex);
-                    pthread_cond_signal(&send_thread_sig);
-                    pthread_mutex_unlock(&send_thread_sig_mutex);
-                    shutdown = 1;
-                }
+        if(state == -1){
+            fprintf(stderr,"State not updated I bet");
+        }
+        if(state == 1){ // 3-way handshake
+            // unpack header
+            if(type == mTCP_SYN_ACK){
+                // if SYN_ACK received, wake up send thread
+                pthread_mutex_lock(&send_thread_sig_mutex);
+                pthread_cond_signal(&send_thread_sig);
+                pthread_mutex_unlock(&send_thread_sig_mutex);
+            }else{
+                fprintf(stderr,"Error on 3-way handshake\n");
+            }
+        }
+        if(state == 2){ // data transmission
+            if(type == mTCP_ACK && rest > local_seq){
+                // if ACK received,
+                // wake up send thread and send new data
+                // note that seq is changed in send thread to for maintanence
+                pthread_mutex_lock(&send_thread_sig_mutex);
+                pthread_cond_signal(&send_thread_sig);
+                pthread_mutex_unlock(&send_thread_sig_mutex);
+            }
+        }
+        if(state == 3){// 4-way handshake
+            if(type == mTCP_FIN_ACK){
+                // if FIN_ACK received, wake up send thread for termination
+                // terminate the thread
+                pthread_mutex_lock(&send_thread_sig_mutex);
+                pthread_cond_signal(&send_thread_sig);
+                pthread_mutex_unlock(&send_thread_sig_mutex);
+                shutdown = 1;
+            }
         }
         free(received);
     }

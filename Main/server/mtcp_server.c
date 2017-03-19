@@ -170,10 +170,10 @@ static void *receive_thread(){
         ACK=rest;
         //local_seq=SEQ;
         pthread_mutex_unlock(&info_mutex);
-        switch (state) {
-            case -1:
+            if(state == -1){
                 fprintf(stderr,"State not updated I bet");
-            case 1: // 3-way handshake
+            }
+            if(state == 1){ // 3-way handshake
                 if(type == mTCP_SYN){
                 //wake up send thread
                     pthread_mutex_lock(&send_thread_sig_mutex);
@@ -189,7 +189,9 @@ static void *receive_thread(){
                 else{
                     fprintf(stderr,"Error on 3-way handshake at server\n");
                 }
-            case 2: // data transmission
+            }
+            if(state == 2){ // data transmission
+                printf("state = %d\n",state);
                 if(type == mTCP_DATA){
                     pthread_mutex_lock(&info_mutex);
                     SEQ=ACK;
@@ -200,10 +202,10 @@ static void *receive_thread(){
                     pthread_mutex_unlock(&send_thread_sig_mutex);
                 }
                 else{
-                fprintf(stderr,"Error on data transmission at server\n");
+                    fprintf(stderr,"Error on data transmission at server\n");
                 }
-
-            case 3: // 4-way handshake
+            }
+            if(state == 3){ // 4-way handshake
                 if(type == mTCP_FIN){
                     //wake up send thread
                     pthread_mutex_lock(&send_thread_sig_mutex);
