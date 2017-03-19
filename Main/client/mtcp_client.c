@@ -36,6 +36,9 @@ int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd;  // socket_fd
 struct sockaddr_in *dest_addr; // server addr
+/* The Sending Thread and Receive Thread Function */
+static void *send_thread();
+static void *receive_thread();
 
 // sending buffer
 QUEUE* mtcp_buffer = NULL;

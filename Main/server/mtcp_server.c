@@ -136,7 +136,7 @@ static void *receive_thread(){
     int32_t shutdown = 0;
     char buf[MAX_BUF_SIZE];
     //int32_t local_seq=-1;
-    mTCPHeader* header = 0;
+    mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
     while(!shutdown){
       //mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
@@ -145,11 +145,12 @@ static void *receive_thread(){
       length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
               (struct sockaddr *)dest_addr, &fromlen);
       if(length <= 0){
+          continue;
           fprintf(stderr,"Error on receiving data\n");
         }
         memcpy(&header,buf,4);
         memcpy(&buff,buf, strlen(buf));
-        unpack_header(header, &type, &rest);
+        unpack_header(&header, &type, &rest);
 
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
