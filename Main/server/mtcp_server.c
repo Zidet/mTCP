@@ -122,7 +122,7 @@ static void *send_thread(){
             header=pack_header(mTCP_SYN_ACK,0);
             packet->header=header;
             memset(packet->buffer, 0, 1000);
-            sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+            sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                     sizeof(*dest_addr));
             printf("[SERVER] Send Thread: SYN_ACK sent\n");
         }
@@ -133,8 +133,8 @@ static void *send_thread(){
             pthread_mutex_lock(&info_mutex);
             pthread_mutex_unlock(&info_mutex);
             memset(packet->buffer, 0, 1000);
-            
-            sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+
+            sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                     sizeof(*dest_addr));
             printf("[SERVER] Send Thread: ACK (#%d) sent\n",local_ack);
             //wake up application thread
@@ -146,7 +146,7 @@ static void *send_thread(){
             header=pack_header(mTCP_FIN_ACK, 0);
             packet->header=header;
             memset(packet->buffer, 0, 1000);
-            sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+            sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                     sizeof(*dest_addr));
             shutdown=1;
             printf("[SERVER] Send Thread: FIN-ACK sent\n");

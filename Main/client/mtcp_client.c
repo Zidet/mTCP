@@ -167,7 +167,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_SYN, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 printf("[CLIENT] Send Thread: mTCP_SYN Sent\n");
             }
@@ -177,7 +177,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 printf("[CLIENT] Send Thread: (3-way) ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
@@ -196,7 +196,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
                 memcpy(packet->buffer,pack->buf,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
@@ -229,7 +229,7 @@ static void *send_thread(){
                 memcpy(pack->buf,packet->buffer,sizeof(packet->buffer));
                 pack->received = 0; // datapack sent, but not received
                 pthread_mutex_unlock(&info_mutex);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct
                             sockaddr*)dest_addr,sizeof(*dest_addr));
                 printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
@@ -242,7 +242,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_FIN,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct
                             sockaddr *)dest_addr, sizeof(*dest_addr));
                 printf("[CLIENT] Send Thread: mTCP_FIN (re)sent\n");
             }
@@ -253,7 +253,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
+                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 shutdown = 1;
                 // wake up application thread
