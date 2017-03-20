@@ -26,6 +26,7 @@ int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd; //socket_fd
 int32_t read_length;
+char bufff[MAX_BUF_SIZE];
 struct sockaddr_in *dest_addr;
 /* The Sending Thread and Receive Thread Function */
 static void *send_thread();
@@ -70,20 +71,20 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
        */
     //change state to data transmission
     pthread_mutex_lock(&info_mutex);
-    read_length=0;
     state=2;
     pthread_mutex_unlock(&info_mutex);
     //wait until data transmission success
-    pthread_mutex_unlock(&app_thread_sig_mutex);
+    pthread_mutex_lock(&app_thread_sig_mutex);
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
     //wake up
     //read data from the receive buffer
-    //memcpy(buf, buff, strlen(buff));
-
-    return read_length;
-}
-
+    memcpy(buf, bufff, strlen(bufff));
+    printf("[SERVER] App thread read_length = %ld\n", strlen(bufff)); 
+    printf("[BUF-CHECKING] BUF is: %s\n", buf);
+      
+    return 52;
+} 
 void mtcp_close(int socket_fd){
     //change state to 4-way
     pthread_mutex_lock(&info_mutex);
@@ -109,6 +110,10 @@ static void *send_thread(){
         pthread_cond_wait(&send_thread_sig, &send_thread_sig_mutex);
         //check state
         pthread_mutex_lock(&info_mutex);
+<<<<<<< HEAD
+=======
+        //local_seq = SEQ;
+>>>>>>> bd0ba8214c44bd3bd8609ecd982cd3ae7bf44c33
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
 
@@ -178,6 +183,8 @@ static void *receive_thread(){
         printf("[SERVER] Receive Thread: Buffer Length = %d\n",length);
         memcpy(&header,buf,4);
         memcpy(buff,buf + 4, length-4);
+        printf("[BUFFF-CHECKING] bufff is: %s", bufff);
+        memcpy(bufff, buff, strlen(buff));
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
