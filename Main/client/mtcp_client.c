@@ -60,7 +60,6 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
             (void * (*)(void *))send_thread,NULL);
     pthread_create(&recv_thread_pid, NULL,
             (void * (*)(void *))receive_thread,NULL);
-
     // wake up send thread
     pthread_mutex_lock(&send_thread_sig_mutex);
     pthread_cond_signal(&send_thread_sig);
@@ -70,6 +69,7 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     pthread_mutex_lock(&app_thread_sig_mutex);
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
+    
 
     return;
 }
@@ -82,7 +82,6 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     writeSendBuff(mtcp_buffer,buf,buf_len);
     state = 2;
     pthread_mutex_unlock(&info_mutex);
-
     // wake up send thread
     pthread_mutex_lock(&send_thread_sig_mutex);
     pthread_cond_signal(&send_thread_sig);
@@ -90,6 +89,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     // none-blocking write!
     // return immediately
     // how to return with error
+    //printf("%d", buf_len);
     return buf_len;
 }
 
@@ -140,7 +140,7 @@ static void *send_thread(){
         local_seq = SEQ;
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
-
+        printf("%d\n",state);
         // 3-way
         if(state == 1){
             // if SYN_ACK not received
@@ -200,8 +200,8 @@ static void *send_thread(){
                 }
                 memcpy(buf,packet->buffer,sizeof(packet->buffer));
                 pthread_mutex_unlock(&info_mutex);
-                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr));
+                sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
+                        sockaddr*)dest_addr,sizeof(*dest_addr));
             }
         }
         else if(state == 3){

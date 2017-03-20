@@ -164,7 +164,7 @@ static void *receive_thread(){
         memcpy(&header,buf,4);
         memcpy(&buff,buf, strlen(buf));
         unpack_header(&header, &type, &rest);
-
+        printf("%d\n", type);
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
         ACK=rest;
@@ -191,7 +191,7 @@ static void *receive_thread(){
                 }
             }
             if(state == 2){ // data transmission
-                printf("state = %d\n",state);
+                //printf("state = %d\n",state);
                 if(type == mTCP_DATA){
                     pthread_mutex_lock(&info_mutex);
                     SEQ=ACK;
