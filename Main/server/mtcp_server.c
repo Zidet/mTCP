@@ -196,7 +196,7 @@ static void *receive_thread(){
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
         }
-        if(state == 1){ // 3-way handshake
+        else if(state == 1){ // 3-way handshake
             if(type == mTCP_SYN){
                 //wake up send thread
                 printf("[SERVER] Receive Thread: SYN received\n");
@@ -216,7 +216,7 @@ static void *receive_thread(){
                 fprintf(stderr,"Error on 3-way handshake at server\n");
             }
         }
-        if(state == 2){ // data transmission
+        else if(state == 2){ // data transmission
             //printf("state = %d\n",state);
             if(type == mTCP_DATA){
                 printf("[SERVER] Receive Thread: data received\n");
@@ -235,7 +235,7 @@ static void *receive_thread(){
                 fprintf(stderr,"Error on data transmission at server\n");
             }
         }
-        if(state == 3){ // 4-way handshake
+        else if(state == 3){ // 4-way handshake
             if(type == mTCP_FIN){
                 //wake up send thread
                 printf("[SERVER] Receive Thread: fin received\n");
