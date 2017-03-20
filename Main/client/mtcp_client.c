@@ -98,6 +98,8 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
 
 /* Close Function Call (mtcp Version) */
 void mtcp_close(int socket_fd){
+    // block until buffer clears
+    while(!isempty(mtcp_buffer));
     // change state to 4-way
     pthread_mutex_lock(&info_mutex);
     state = 3;
@@ -208,6 +210,7 @@ static void *send_thread(){
                 pthread_mutex_unlock(&info_mutex);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
                         sockaddr*)dest_addr,sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: New data sent\n");
             }
         }
         else if(state == 3){
@@ -219,6 +222,7 @@ static void *send_thread(){
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
                             sockaddr *)dest_addr, sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: mTCP_FIN (re)sent\n");
             }
             else if(local_lastreceive == mTCP_FIN_ACK){
                 // if FIN-ACK received, send ACK
@@ -230,6 +234,8 @@ static void *send_thread(){
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 shutdown = 1;
+                printf("[CLIENT] Send Thread: FIN_ACK received, ACK sent\n");
+                printf("[CLIENT] Send Thread: shutdown done\n");
             }
         }
         free(packet);
@@ -269,6 +275,9 @@ static void *receive_thread(){
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
         }
+        printf("[CLIENT] Receive Thread: ACK = %d\n", ACK);
+        printf("[CLIENT] Receive Thread: data received, start analyzing state\n");
+        printf("[CLIENT] Receive Thread: state = %d\n", state);
         if(state == 1){ // 3-way handshake
             // unpack header
             if(type == mTCP_SYN_ACK){
@@ -276,6 +285,7 @@ static void *receive_thread(){
                 pthread_mutex_lock(&send_thread_sig_mutex);
                 pthread_cond_signal(&send_thread_sig);
                 pthread_mutex_unlock(&send_thread_sig_mutex);
+                printf("[CLIENT] Receive Thread: SYN_ACK Received, switch to send thread\n");
             }else{
                 fprintf(stderr,"Error on 3-way handshake\n");
             }
@@ -288,6 +298,7 @@ static void *receive_thread(){
                 pthread_mutex_lock(&send_thread_sig_mutex);
                 pthread_cond_signal(&send_thread_sig);
                 pthread_mutex_unlock(&send_thread_sig_mutex);
+                printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
             }
         }
         if(state == 3){// 4-way handshake
@@ -298,6 +309,8 @@ static void *receive_thread(){
                 pthread_cond_signal(&send_thread_sig);
                 pthread_mutex_unlock(&send_thread_sig_mutex);
                 shutdown = 1;
+                printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
+                printf("[CLIENT] Receive Thread: shutdown\n");
             }
         }
         free(received);
