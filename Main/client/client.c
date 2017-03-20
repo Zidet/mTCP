@@ -59,7 +59,6 @@ int main(int argc, char **argv){
 	while( (read_rtn = read(file_fd, buf, MAX_BUF_SIZE)) > 0){
 	    // Send the read data through mTCP protocol
 		mtcp_write(sock_fd, (unsigned char *) buf, read_rtn);
-
 	}
 	printf("done\n\n");
 
