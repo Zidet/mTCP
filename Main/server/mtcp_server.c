@@ -83,7 +83,6 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     memcpy(buf, bufff, strlen(bufff));
     printf("[SERVER] App thread read_length = %ld\n", strlen(bufff)); 
     printf("[BUF-CHECKING] BUF is: %s\n", buf);
-      
     return strlen(bufff);
 } 
 void mtcp_close(int socket_fd){
@@ -172,11 +171,11 @@ static void *receive_thread(){
         //mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
         socklen_t fromlen=sizeof(*dest_addr);
-        length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
+        length = recvfrom(sfd,  buf, sizeof(*packet),0,
                 (struct sockaddr *)dest_addr, &fromlen);
-        if(length <= 0){
-            continue;
+        if(length <= 0 && state != 2){
             fprintf(stderr,"Error on receiving data\n");
+            continue;
         }
         printf("[SERVER] Receive Thread: Buffer Length = %d\n",length);
         memcpy(&header,buf,4);
@@ -200,7 +199,6 @@ static void *receive_thread(){
         ACK=rest;
         //local_seq=SEQ;
         pthread_mutex_unlock(&info_mutex);
-
         printf("[SERVER] Receive Thread: state = %d\n", state);
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
