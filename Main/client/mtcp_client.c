@@ -282,6 +282,12 @@ static void *receive_thread(){
         // get the hearder and unpack
         memcpy(&header,buf,4);
         unpack_header(&header, &type, &rest);
+
+        printf("\n------------------------------------------\n");
+        printf("[CLIENT] Receive Thread Loop Started\n");
+        printf("[CLIENT] Receive Thread Loop: state = %d\n",state);
+        printf("------------------------------------------\n");
+
         printf("[CLIENT] Receive Thread: On revceiving buf:\n");
         printf("[CLIENT]           type: %d\n", type);
         printf("[CLIENT]        SEQ/ACK: %d\n", rest);
@@ -294,10 +300,6 @@ static void *receive_thread(){
         local_seq = SEQ;
         pthread_mutex_unlock(&info_mutex);
 
-        printf("\n------------------------------------------\n");
-        printf("[CLIENT] Receive Thread Loop Started\n");
-        printf("[CLIENT] Receive Thread Loop: state = %d\n",state);
-        printf("------------------------------------------\n");
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
         }

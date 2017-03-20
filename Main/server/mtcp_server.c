@@ -110,6 +110,12 @@ static void *send_thread(){
         pthread_mutex_lock(&info_mutex);
         //local_seq = SEQ;
         pthread_mutex_unlock(&info_mutex);
+
+        printf("\n------------------------------------------\n");
+        printf("[SERVER] Send Thread Loop Started\n");
+        printf("[SERVER] Send Thread: state = %d\n",state);
+        printf("------------------------------------------\n");
+
         printf("[SERVER] Send Thread: state = %d\n", state);
         if (state==1){
             header=pack_header(mTCP_SYN_ACK,0);
@@ -128,10 +134,9 @@ static void *send_thread(){
             ACK=SEQ+200;
             memset(packet->buffer, 0, 1000);
             pthread_mutex_unlock(&info_mutex);
-            printf("[SERVER] Send Thread: ACK = %d\n", local_ack);
             sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                     sizeof(*dest_addr));
-            printf("[SERVER] Send Thread: ACK sent\n");
+            printf("[SERVER] Send Thread: ACK (#%d) sent\n",local_ack);
             //wake up application thread
             pthread_mutex_lock(&app_thread_sig_mutex);
             pthread_cond_signal(&app_thread_sig);
@@ -170,17 +175,23 @@ static void *receive_thread(){
         memcpy(&header,buf,4);
         memcpy(&buff,buf, strlen(buf));
         unpack_header(&header, &type, &rest);
+        printf("\n------------------------------------------\n");
+        printf("[SERVER] Receive Thread Loop Started\n");
+        printf("[SERVER] Receive Thread Loop: state = %d\n",state);
+        printf("------------------------------------------\n");
+
+
         printf("[SERVER] Receive Thread: On revceiving buf:\n");
         printf("[SERVER]           type: %d\n", type);
         printf("[SERVER]        SEQ/ACK: %d\n", rest);
         printf("[SERVER] Receive Thread: header analysis\n\n");
-        
+
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
         ACK=rest;
         //local_seq=SEQ;
         pthread_mutex_unlock(&info_mutex);
-        
+
         printf("[SERVER] Receive Thread: state = %d\n", state);
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
