@@ -33,12 +33,13 @@ mTCPHeader pack_header(int32_t type, int32_t seq){
     int32_t mt,mr;
 
     // convert seq to B-Endian
-    seq = htonl(seq);
+    //seq = htonl(seq);
 
     // Pack
     mt = (type & 0xF) << 28;
     mr = (seq & 0xFFFFFFF);
     head = mt | mr;
+    head = htonl(head);
 
     if(type < 0 || type > 5){
         fprintf(stderr, "Pack_header fail: Invalid type range\n");
@@ -56,9 +57,9 @@ mTCPHeader pack_header(int32_t type, int32_t seq){
 //   Inputs        : mTCPheader
 //   Outputs       : 0 success, -1 fail
 int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq){
+    *head = ntohl(*head);
     *type = (*head >> 28) & 0xF;
     *seq = *head & 0xFFFFFFF;
-    *seq = ntohl(*seq);
 
     if(*type < 0 || *type > 5){
         fprintf(stderr, "Unpack_header fail: Invalid type retrieved\n");
