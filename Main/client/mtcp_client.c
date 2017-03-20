@@ -92,7 +92,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     // none-blocking write!
     // return immediately
     // how to return with error
-    //printf("%d", buf_len);
+    printf("[CLIENT] App Thread: buf_len = %d\n", buf_len);
     return buf_len;
 }
 
@@ -143,7 +143,7 @@ static void *send_thread(){
         local_seq = SEQ;
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
-        printf("%d\n",state);
+        printf("[CLIENT] Send Thread: state = %d\n",state);
         // 3-way
         if(state == 1){
             // if SYN_ACK not received
@@ -155,6 +155,7 @@ static void *send_thread(){
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: mTCP_SYN Sent\n");
             }
             else if(local_lastreceive == mTCP_SYN_ACK){
                 // if SYN-ACK received, send ACK
@@ -182,6 +183,7 @@ static void *send_thread(){
                 memcpy(packet->buffer,buf,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: package resent\n");
             }
             // send new data
             else{
