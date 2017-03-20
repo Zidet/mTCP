@@ -110,6 +110,7 @@ static void *send_thread(){
         //check state
         pthread_mutex_lock(&info_mutex);
         //local_seq = SEQ;
+        local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
 
         printf("\n------------------------------------------\n");
