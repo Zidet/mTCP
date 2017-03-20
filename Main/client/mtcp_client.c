@@ -280,23 +280,24 @@ static void *receive_thread(){
     int32_t local_seq = -1;
     // local buffer for receive thread
     // it should be the received mtcp packet
-    unsigned char buf[MAX_BUF_SIZE];
+    // unsigned char buf[MAX_BUF_SIZE];
     // local buffer for header, type and rest(ACK/SEQ)
     mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
     while(!shutdown){
         mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
-        memset(buf, 0, MAX_BUF_SIZE);
+        //memset(buf, 0, MAX_BUF_SIZE);
         socklen_t fromlen = sizeof(*dest_addr);
-        length = recvfrom(sfd,  buf, MAX_BUF_SIZE,0,
+        length = recvfrom(sfd,  received, sizeof(mTCPPacket),0,
                 (struct sockaddr *)dest_addr, &fromlen);
         if(length <= 0){
             continue;
             fprintf(stderr,"Error on receiving data\n");
         }
         // get the hearder and unpack
-        memcpy(&header,buf,4);
+        //memcpy(&header,buf,4);
+        header = received->header;
         unpack_header(&header, &type, &rest);
 
         printf("\n------------------------------------------\n");

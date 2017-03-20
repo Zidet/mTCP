@@ -19,6 +19,7 @@
 // Useful constant
 #define MAX_BUF_SIZE	1024
 #define SERVER_PORT	12345
+#define PACKET_SIZE 1004
 
 // Type definition
 typedef int32_t mTCPHeader;  // Header for the mTCP protocol
@@ -59,6 +60,8 @@ mTCPHeader pack_header(int32_t type, int32_t seq);
 
 // Unpack the mTCP header and retrieve information
 int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq);
-
+void create_packet(unsigned char *packet, unsigned char type, unsigned int seq, unsigned char *data, size_t data_len);
+unsigned char get_packet_type(unsigned char *packet);
+unsigned int get_packet_seq(unsigned char *packet);
 
 #endif
