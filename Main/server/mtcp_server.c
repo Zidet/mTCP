@@ -132,8 +132,6 @@ static void *send_thread(){
             header=pack_header(mTCP_ACK, local_ack);
             packet->header=header;
             pthread_mutex_lock(&info_mutex);
-            local_ack=SEQ+strlen(buf);
-            ACK=SEQ+strlen(buf);
             pthread_mutex_unlock(&info_mutex);
             memset(packet->buffer, 0, 1000);
             
@@ -227,6 +225,7 @@ static void *receive_thread(){
                 printf("[SERVER] Receive Thread: data received\n");
                 printf("[SERVER] Receive Thread: data: \n%s\n",buf);
                 pthread_mutex_lock(&info_mutex);
+                ACK=ACK+strlen(buf);
                 SEQ=ACK;
                 pthread_mutex_unlock(&info_mutex);
                 //wake up sending thread
