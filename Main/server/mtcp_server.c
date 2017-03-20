@@ -25,6 +25,7 @@ int32_t SEQ = 0;
 int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd; //socket_fd
+int32_t read_length;
 char buff[MAX_BUF_SIZE];
 struct sockaddr_in *dest_addr;
 /* The Sending Thread and Receive Thread Function */
@@ -70,6 +71,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
        */
     //change state to data transmission
     pthread_mutex_lock(&info_mutex);
+    read_length=0;
     state=2;
     pthread_mutex_unlock(&info_mutex);
     //wait until data transmission success
@@ -78,9 +80,9 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     pthread_mutex_unlock(&app_thread_sig_mutex);
     //wake up
     //read data from the receive buffer
-    memcpy(&buf, buff, strlen(buff));
+    //memcpy(buf, buff, strlen(buff));
 
-    return strlen(buff);
+    return read_length;
 }
 
 void mtcp_close(int socket_fd){
@@ -127,13 +129,14 @@ static void *send_thread(){
         }
         else if(state==2){
             // send ACK packet out
-            local_ack=SEQ+200;
             header=pack_header(mTCP_ACK, local_ack);
             packet->header=header;
             pthread_mutex_lock(&info_mutex);
-            ACK=SEQ+200;
-            memset(packet->buffer, 0, 1000);
+            local_ack=SEQ+strlen(buf);
+            ACK=SEQ+strlen(buf);
             pthread_mutex_unlock(&info_mutex);
+            memset(packet->buffer, 0, 1000);
+            
             sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                     sizeof(*dest_addr));
             printf("[SERVER] Send Thread: ACK (#%d) sent\n",local_ack);
@@ -173,7 +176,7 @@ static void *receive_thread(){
             fprintf(stderr,"Error on receiving data\n");
         }
         memcpy(&header,buf,4);
-        memcpy(&buff,buf, strlen(buf));
+        memcpy(buf,buff, strlen(buf));
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
@@ -195,6 +198,7 @@ static void *receive_thread(){
         printf("[SERVER] Receive Thread: state = %d\n", state);
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
+            continue;
         }
         else if(state == 1){ // 3-way handshake
             if(type == mTCP_SYN){
@@ -215,6 +219,7 @@ static void *receive_thread(){
             else{
                 fprintf(stderr,"Error on 3-way handshake at server\n");
             }
+            continue;
         }
         else if(state == 2){ // data transmission
             //printf("state = %d\n",state);
@@ -234,6 +239,7 @@ static void *receive_thread(){
                 printf("\n");
                 fprintf(stderr,"Error on data transmission at server\n");
             }
+            continue;
         }
         else if(state == 3){ // 4-way handshake
             if(type == mTCP_FIN){
@@ -243,7 +249,7 @@ static void *receive_thread(){
                 pthread_cond_signal(&send_thread_sig);
                 pthread_mutex_unlock(&send_thread_sig_mutex);
             }
-            if(type == mTCP_ACK){
+            else if(type == mTCP_ACK){
                 //wake up application thread
                 printf("[SERVER] Receive Thread: ACK received\n");
                 pthread_mutex_lock(&app_thread_sig_mutex);
@@ -252,6 +258,7 @@ static void *receive_thread(){
                 //terminate itself
                 shutdown=1;
             }
+            continue;
         }
         //free(received);
     }
