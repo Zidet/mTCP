@@ -71,6 +71,9 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
 
+
+    printf("[CLIENT] App Thread: 3-way ok\n");
+
     return;
 }
 
@@ -161,6 +164,7 @@ static void *send_thread(){
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: 3-way ok\n");
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);
                 pthread_cond_signal(&app_thread_sig);

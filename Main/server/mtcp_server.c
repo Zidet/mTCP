@@ -54,6 +54,7 @@ void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
     pthread_cond_wait(&app_thread_sig, &app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
 
+    printf("[SERVER] App Thread: 3-way ok\n");
     return;
 }
 
@@ -185,6 +186,7 @@ static void *receive_thread(){
                     pthread_mutex_lock(&send_thread_sig_mutex);
                     pthread_cond_signal(&app_thread_sig);
                     pthread_mutex_unlock(&send_thread_sig_mutex);
+                    printf("[SERVER] Receive Thread: 3-way ok\n");
                 }
                 else{
                     fprintf(stderr,"Error on 3-way handshake at server\n");
