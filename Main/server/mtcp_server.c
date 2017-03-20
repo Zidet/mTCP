@@ -158,7 +158,6 @@ static void *receive_thread(){
     mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
     while(!shutdown){
-        printf("[SERVER] Receive Thread: state = %d\n", state);
         //mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
         socklen_t fromlen=sizeof(*dest_addr);
@@ -171,11 +170,18 @@ static void *receive_thread(){
         memcpy(&header,buf,4);
         memcpy(&buff,buf, strlen(buf));
         unpack_header(&header, &type, &rest);
+        printf("[SERVER] Receive Thread: On revceiving buf:\n");
+        printf("[SERVER]           type: %d\n", type);
+        printf("[SERVER]        SEQ/ACK: %d\n", rest);
+        printf("[SERVER] Receive Thread: header analysis\n\n");
+        
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
         ACK=rest;
         //local_seq=SEQ;
         pthread_mutex_unlock(&info_mutex);
+        
+        printf("[SERVER] Receive Thread: state = %d\n", state);
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
         }
@@ -203,6 +209,7 @@ static void *receive_thread(){
             //printf("state = %d\n",state);
             if(type == mTCP_DATA){
                 printf("[SERVER] Receive Thread: data received\n");
+                printf("[SERVER] Receive Thread: data: \n%s\n",buf);
                 pthread_mutex_lock(&info_mutex);
                 SEQ=ACK;
                 pthread_mutex_unlock(&info_mutex);
@@ -212,6 +219,8 @@ static void *receive_thread(){
                 pthread_mutex_unlock(&send_thread_sig_mutex);
             }
             else{
+                printf("why error on data transmission? type = %d\n",type);
+                printf("\n");
                 fprintf(stderr,"Error on data transmission at server\n");
             }
         }

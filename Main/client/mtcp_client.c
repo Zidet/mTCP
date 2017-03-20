@@ -35,6 +35,7 @@ int32_t SEQ = 0;
 int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd;  // socket_fd
+int32_t all_sent = 0;
 struct sockaddr_in *dest_addr; // server addr
 /* The Sending Thread and Receive Thread Function */
 static void *send_thread();
@@ -69,7 +70,7 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     pthread_mutex_lock(&app_thread_sig_mutex);
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
-    
+
 
 
     printf("[CLIENT] App Thread: 3-way ok\n");
@@ -99,7 +100,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
 /* Close Function Call (mtcp Version) */
 void mtcp_close(int socket_fd){
     // block until buffer clears
-    while(!isempty(mtcp_buffer));
+    while(!all_sent);
     // change state to 4-way
     pthread_mutex_lock(&info_mutex);
     state = 3;
@@ -189,10 +190,16 @@ static void *send_thread(){
                 memcpy(packet->buffer,buf,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
-                printf("[CLIENT] Send Thread: package resent\n");
+                printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
             }
-            // send new data
+            // all data sent have received by server,
+            // and 1. send new data
+            //     2. if no data left, terminate data transmission
             else{
+                if(isempty(mtcp_buffer)){
+                    all_sent = 1;
+                    continue;
+                }
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
@@ -213,8 +220,8 @@ static void *send_thread(){
                 memcpy(buf,packet->buffer,sizeof(packet->buffer));
                 pthread_mutex_unlock(&info_mutex);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
-                        sockaddr*)dest_addr,sizeof(*dest_addr));
-                printf("[CLIENT] Send Thread: New data sent\n");
+                            sockaddr*)dest_addr,sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
             }
         }
         else if(state == 3){
@@ -238,8 +245,13 @@ static void *send_thread(){
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
                 shutdown = 1;
+                // wake up application thread
+                pthread_mutex_lock(&app_thread_sig_mutex);
+                pthread_cond_signal(&app_thread_sig);
+                pthread_mutex_unlock(&app_thread_sig_mutex);
                 printf("[CLIENT] Send Thread: FIN_ACK received, ACK sent\n");
                 printf("[CLIENT] Send Thread: shutdown done\n");
+
             }
         }
         free(packet);
@@ -270,6 +282,11 @@ static void *receive_thread(){
         // get the hearder and unpack
         memcpy(&header,buf,4);
         unpack_header(&header, &type, &rest);
+        printf("[CLIENT] Receive Thread: On revceiving buf:\n");
+        printf("[CLIENT]           type: %d\n", type);
+        printf("[CLIENT]        SEQ/ACK: %d\n", rest);
+        printf("[CLIENT] Receive Thread: header analysis\n\n");
+
 
         pthread_mutex_lock(&info_mutex);
         lastreceive = type;
