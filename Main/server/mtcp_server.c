@@ -71,6 +71,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
        */
     //change state to data transmission
     pthread_mutex_lock(&info_mutex);
+    memset(bufff,0,MAX_BUF_SIZE);
     state=2;
     pthread_mutex_unlock(&info_mutex);
     //wait until data transmission success

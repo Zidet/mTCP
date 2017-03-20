@@ -205,14 +205,19 @@ static void *send_thread(){
             // and 1. send new data
             //     2. if no data left, terminate data transmission
             else{
-                if(isempty(mtcp_buffer)){
-                    all_sent = 1;
+                if(all_sent){
                     continue;
+                }
+                if(isempty(mtcp_buffer) && pack->received == 1){
+                    pthread_mutex_lock(&info_mutex);
+                    all_sent = 1;
+                    pthread_mutex_unlock(&info_mutex);
                 }
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 memset(pack->buf, 0, 1000);
+
                 // Manipulate buffer
                 pthread_mutex_lock(&info_mutex);
                 SEQ = ACK; // update SEQ to lastest
