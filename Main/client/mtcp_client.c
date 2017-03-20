@@ -37,6 +37,15 @@ int32_t lastreceive = -1;
 int32_t sfd;  // socket_fd
 int32_t all_sent = 0;
 struct sockaddr_in *dest_addr; // server addr
+
+struct send_pack{
+    unsigned char buf[MAX_BUF_SIZE]; // local buffer for send thread
+
+    // a flag to check whether some block of data has been received
+    int32_t received;
+};
+struct send_pack *pack;
+
 /* The Sending Thread and Receive Thread Function */
 static void *send_thread();
 static void *receive_thread();
@@ -51,6 +60,8 @@ void mtcp_connect(int socket_fd, struct sockaddr_in *server_addr){
     pthread_mutex_lock(&info_mutex);
     mtcp_buffer = (QUEUE*) createqueue();
     dest_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+    pack = (struct send_pack*)malloc(sizeof(struct send_pack)); // to keep track of a datapack
+    pack->received = 0; //the datapack is not received yet obv
     sfd = socket_fd;
     memcpy(dest_addr,server_addr,sizeof(struct sockaddr_in));
     state = 1;
@@ -85,6 +96,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     pthread_mutex_lock(&info_mutex);
     writeSendBuff(mtcp_buffer,buf,buf_len);
     state = 2;
+    pack->received = 0; //the datapack is not received yet obv
     pthread_mutex_unlock(&info_mutex);
     // wake up send thread
     pthread_mutex_lock(&send_thread_sig_mutex);
@@ -124,12 +136,9 @@ static void *send_thread(){
     // struct for time control
     struct timespec timeToWait;
     struct timeval now;
-
     mTCPHeader header = 0;
-    unsigned char buf[MAX_BUF_SIZE]; // local buffer for send thread
     while(!shutdown){
         int32_t local_lastreceive = -1;
-        int32_t local_seq = -1;
         int32_t local_ack = -1;
         // mTCP packet for send
         mTCPPacket *packet = (mTCPPacket*)malloc(sizeof(mTCPPacket));
@@ -143,7 +152,6 @@ static void *send_thread(){
         // check data transmission state
         pthread_mutex_lock(&info_mutex);
         local_lastreceive = lastreceive;
-        local_seq = SEQ;
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
         printf("\n------------------------------------------\n");
@@ -183,13 +191,14 @@ static void *send_thread(){
         else if(state == 2){
             // if data was lost, resend
             // error-proned: is there a better condition?
-            if(local_lastreceive != mTCP_ACK || local_ack<=local_seq){
+            if(pack->received == 0 && local_lastreceive != mTCP_SYN_ACK){
                 // resemble data packet
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
-                memcpy(packet->buffer,buf,1000);
+                memcpy(packet->buffer,pack->buf,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
             }
             // all data sent have received by server,
@@ -203,7 +212,7 @@ static void *send_thread(){
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                memset(buf, 0, 1000);
+                memset(pack->buf, 0, 1000);
                 // Manipulate buffer
                 pthread_mutex_lock(&info_mutex);
                 SEQ = ACK; // update SEQ to lastest
@@ -217,10 +226,12 @@ static void *send_thread(){
                     }
                     packet->buffer[j]=tmp;
                 }
-                memcpy(buf,packet->buffer,sizeof(packet->buffer));
+                memcpy(pack->buf,packet->buffer,sizeof(packet->buffer));
+                pack->received = 0; // datapack sent, but not received
                 pthread_mutex_unlock(&info_mutex);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct
                             sockaddr*)dest_addr,sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
             }
         }
@@ -321,6 +332,12 @@ static void *receive_thread(){
         else if(state == 2){ // data transmission
             if(type == mTCP_ACK && rest > local_seq){
                 // if ACK received,
+                // update the datapack to marked it received
+                // and TODO: try to get new data
+                pthread_mutex_lock(&info_mutex);
+                pack->received = 1;
+                pthread_mutex_unlock(&info_mutex);
+
                 // wake up send thread and send new data
                 // note that seq is changed in send thread to for maintanence
                 pthread_mutex_lock(&send_thread_sig_mutex);

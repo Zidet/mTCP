@@ -175,8 +175,9 @@ static void *receive_thread(){
             continue;
             fprintf(stderr,"Error on receiving data\n");
         }
+        printf("[SERVER] Receive Thread: Buffer Length = %d\n",length);
         memcpy(&header,buf,4);
-        memcpy(buff,buf+4, strlen(buf)-4);
+        memcpy(buff,buf + 4, length-4);
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
