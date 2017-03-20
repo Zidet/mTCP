@@ -226,8 +226,9 @@ static void *receive_thread(){
             //printf("state = %d\n",state);
             if(type == mTCP_DATA){
                 printf("[SERVER] Receive Thread: data received\n");
-                printf("[SERVER] Receive Thread: data: \n%s\n",buf);
+                printf("[SERVER] Receive Thread: data: \n%s\n",buff);
                 pthread_mutex_lock(&info_mutex);
+                printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
                 ACK=ACK+strlen(buff);
                 pthread_mutex_unlock(&info_mutex);
                 //wake up sending thread
