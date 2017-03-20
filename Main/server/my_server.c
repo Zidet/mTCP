@@ -110,7 +110,10 @@ static void *send_thread(){
         pthread_cond_wait(&send_thread_sig, &send_thread_sig_mutex);
         //check state
         pthread_mutex_lock(&info_mutex);
+<<<<<<< HEAD
+=======
         //local_seq = SEQ;
+>>>>>>> bd0ba8214c44bd3bd8609ecd982cd3ae7bf44c33
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
 
@@ -231,8 +234,8 @@ static void *receive_thread(){
             if(type == mTCP_DATA){
                 printf("[SERVER] Receive Thread: data received\n");
                 printf("[SERVER] Receive Thread: data: \n%s\n",buff);
-                pthread_mutex_lock(&info_mutex);
                 printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
+                pthread_mutex_lock(&info_mutex);
                 ACK=ACK+strlen(buff);
                 pthread_mutex_unlock(&info_mutex);
                 //wake up sending thread
