@@ -158,8 +158,8 @@ static void *send_thread(){
 
 static void *receive_thread(){
     int32_t shutdown = 0;
-    unsigned char buf[MAX_BUF_SIZE];
-    unsigned char buff[MAX_BUF_SIZE];
+    char buf[MAX_BUF_SIZE];
+    char buff[MAX_BUF_SIZE];
     memset(buf,0,MAX_BUF_SIZE);
     memset(buff,0,MAX_BUF_SIZE);
     //int32_t local_seq=-1;
