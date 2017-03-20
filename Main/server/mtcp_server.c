@@ -83,7 +83,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     printf("[SERVER] App thread read_length = %ld\n", strlen(bufff)); 
     printf("[BUF-CHECKING] BUF is: %s\n", buf);
       
-    return 52;
+    return strlen(bufff);
 } 
 void mtcp_close(int socket_fd){
     //change state to 4-way
