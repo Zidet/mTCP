@@ -171,7 +171,7 @@ static void *send_thread(){
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
-                printf("[CLIENT] Send Thread: SYN_ACK sent\n");
+                printf("[CLIENT] Send Thread: (3-way) ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);
@@ -318,7 +318,7 @@ static void *receive_thread(){
                 fprintf(stderr,"Error on 3-way handshake\n");
             }
         }
-        if(state == 2){ // data transmission
+        else if(state == 2){ // data transmission
             if(type == mTCP_ACK && rest > local_seq){
                 // if ACK received,
                 // wake up send thread and send new data
@@ -329,7 +329,7 @@ static void *receive_thread(){
                 printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
             }
         }
-        if(state == 3){// 4-way handshake
+        else if(state == 3){// 4-way handshake
             if(type == mTCP_FIN_ACK){
                 // if FIN_ACK received, wake up send thread for termination
                 // terminate the thread
