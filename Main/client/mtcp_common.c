@@ -33,12 +33,13 @@ mTCPHeader pack_header(int32_t type, int32_t seq){
     int32_t mt,mr;
 
     // convert seq to B-Endian
-    seq = htonl(seq);
+    // seq = htonl(seq);
 
     // Pack
     mt = (type & 0xF) << 28;
     mr = (seq & 0x0FFFFFFF);
     head = mt | mr;
+    head = htonl(head);
 
     if(type < 0 || type > 5){
         fprintf(stderr, "Pack_header fail: Invalid type range\n");
@@ -56,9 +57,10 @@ mTCPHeader pack_header(int32_t type, int32_t seq){
 //   Inputs        : mTCPheader
 //   Outputs       : 0 success, -1 fail
 int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq){
+    *head = htonl(*head);
     *type = (*head >> 28) & 0xF;
     *seq = *head & 0x0FFFFFFF;
-    *seq = ntohl(*seq);
+    //*seq = ntohl(*seq);
 
     if(*type < 0 || *type > 5){
         fprintf(stderr, "Unpack_header fail: Invalid type retrieved\n");
@@ -66,25 +68,4 @@ int32_t unpack_header(mTCPHeader *head, int32_t *type, int32_t *seq){
     }
 
     return 0;
-}
-
-void create_packet(unsigned char *packet, unsigned char type, unsigned int seq, unsigned char *data, size_t data_len)
-{
-	memset(packet,0,MAX_BUF_SIZE+4);
-	unsigned int header = htonl(((type & 0xf)<<28) | (seq & 0x0fffffff));
-	*((unsigned int *)packet) = header;
-	if(data)
-		memcpy(packet+4,data,data_len);
-}
-
-unsigned char get_packet_type(unsigned char *packet)
-{
-	unsigned int header = ntohl(*((unsigned int *)packet));
-	return (header>>28)&0xf;
-}
-
-unsigned int get_packet_seq(unsigned char *packet)
-{
-	unsigned int header = ntohl(*((unsigned int *)packet));
-	return header & 0x0fffffff;
 }
