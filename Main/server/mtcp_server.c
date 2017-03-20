@@ -71,6 +71,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
        */
     //change state to data transmission
     pthread_mutex_lock(&info_mutex);
+    sfd=socket_fd;
     memset(bufff,0,MAX_BUF_SIZE);
     state=2;
     pthread_mutex_unlock(&info_mutex);
@@ -170,9 +171,11 @@ static void *receive_thread(){
     while(!shutdown){
         //mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
         int32_t length;
-        socklen_t fromlen=sizeof(*dest_addr);
-        length = recvfrom(sfd,  buf, sizeof(*packet),0,
+        socklen_t fromlen=sizeof(struct sockaddr_in) ;
+        printf("abcsds\n");
+        length = recvfrom(sfd, buf, MAX_BUF_SIZE,0,
                 (struct sockaddr *)dest_addr, &fromlen);
+        printf("defgh\n");
         if(length <= 0 && state != 2){
             fprintf(stderr,"Error on receiving data\n");
             continue;
