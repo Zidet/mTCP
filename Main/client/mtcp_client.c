@@ -145,7 +145,10 @@ static void *send_thread(){
         local_seq = SEQ;
         local_ack = ACK;
         pthread_mutex_unlock(&info_mutex);
+        printf("\n------------------------------------------\n");
+        printf("[CLIENT] Send Thread Loop Started\n");
         printf("[CLIENT] Send Thread: state = %d\n",state);
+        printf("------------------------------------------\n");
         // 3-way
         if(state == 1){
             // if SYN_ACK not received
@@ -167,6 +170,7 @@ static void *send_thread(){
                 memset(packet->buffer, 0,1000);
                 sendto(sfd, (void*)packet, sizeof(packet), 0, (struct sockaddr*)dest_addr,
                         sizeof(*dest_addr));
+                printf("[CLIENT] Send Thread: SYN_ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);
@@ -272,6 +276,11 @@ static void *receive_thread(){
         ACK = rest;
         local_seq = SEQ;
         pthread_mutex_unlock(&info_mutex);
+
+        printf("\n------------------------------------------\n");
+        printf("[CLIENT] Receive Thread Loop Started\n");
+        printf("[CLIENT] Receive Thread Loop: state = %d\n",state);
+        printf("------------------------------------------\n");
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
         }
