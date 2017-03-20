@@ -26,7 +26,6 @@ int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd; //socket_fd
 int32_t read_length;
-char buff[MAX_BUF_SIZE];
 struct sockaddr_in *dest_addr;
 /* The Sending Thread and Receive Thread Function */
 static void *send_thread();
@@ -160,6 +159,9 @@ static void *send_thread(){
 static void *receive_thread(){
     int32_t shutdown = 0;
     char buf[MAX_BUF_SIZE];
+    char buff[MAX_BUF_SIZE];
+    memset(buf,0,MAX_BUF_SIZE);
+    memset(buff,0,MAX_BUF_SIZE);
     //int32_t local_seq=-1;
     mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
@@ -174,7 +176,7 @@ static void *receive_thread(){
             fprintf(stderr,"Error on receiving data\n");
         }
         memcpy(&header,buf,4);
-        memcpy(buf,buff, strlen(buf));
+        memcpy(buff,buf+4, strlen(buf)-4);
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
@@ -225,8 +227,7 @@ static void *receive_thread(){
                 printf("[SERVER] Receive Thread: data received\n");
                 printf("[SERVER] Receive Thread: data: \n%s\n",buf);
                 pthread_mutex_lock(&info_mutex);
-                ACK=ACK+strlen(buf);
-                SEQ=ACK;
+                ACK=ACK+strlen(buff);
                 pthread_mutex_unlock(&info_mutex);
                 //wake up sending thread
                 pthread_mutex_lock(&send_thread_sig_mutex);
