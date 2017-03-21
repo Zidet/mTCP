@@ -179,6 +179,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: mTCP_SYN Sent\n");
             }
             else if(local_lastreceive == mTCP_SYN_ACK){
@@ -191,6 +192,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: (3-way) ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
                 // wake up application thread
@@ -213,6 +215,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",strlen((const char*)pack->buf));
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
@@ -254,6 +257,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)pack->buf));
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
@@ -270,6 +274,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: mTCP_FIN (re)sent\n");
             }
             else if(local_lastreceive == mTCP_FIN_ACK){
@@ -283,6 +288,7 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                printf("[CLIENT] check: %d",check);
                 shutdown = 1;
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);

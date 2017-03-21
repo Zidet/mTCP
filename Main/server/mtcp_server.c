@@ -152,6 +152,7 @@ static void *send_thread(){
                     sizeof(*dest_addr))) == -1){
                       perror("sendto: ");
                     }
+            printf("[CLIENT] check: %d",check);
             printf("[SERVER] Send Thread: SYN_ACK sent\n");
         }
         else if(state==2){
@@ -166,6 +167,7 @@ static void *send_thread(){
                     sizeof(*dest_addr))) == -1){
                       perror("sendto: ");
                     }
+            printf("[CLIENT] check: %d",check);
             printf("[SERVER] Send Thread: ACK (#%d) sent\n",local_ack);
             //wake up application thread
             pthread_mutex_lock(&app_thread_sig_mutex);
@@ -180,6 +182,7 @@ static void *send_thread(){
                     sizeof(*dest_addr))) == -1){
                       perror("sendto: ");
                     }
+            printf("[CLIENT] check: %d",check);
             shutdown=1;
             printf("[SERVER] Send Thread: FIN-ACK sent\n");
         }
