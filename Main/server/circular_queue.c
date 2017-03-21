@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "circular_queue.h"
-
 QUEUE* createqueue(){
-  struct queue* q=(QUEUE*)malloc(sizeof(QUEUE));
+  struct queue* q=(QUEUE*)malloc(sizeof(char)*pow(2,28));
   q->front=q->rear=-1;
   return q;
 }
