@@ -18,7 +18,7 @@ int isfull(QUEUE *q){
 }
 
 int queuesize(QUEUE *q){
-        	//printf("\n %d %d %d\n",BUFFSIZE,q->rear,q->front);
+        	printf("\n %d %d %d\n",BUFFSIZE,q->rear,q->front);
         	return ((BUFFSIZE-q->front+q->rear+1)%BUFFSIZE);
 }
 
