@@ -35,7 +35,8 @@ int32_t SEQ = 0;
 int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd;  // socket_fd
-int32_t all_sent = 0;
+int32_t all_sent = 0
+int32_t check = 1;
 struct sockaddr_in *dest_addr; // server addr
 
 struct send_pack{
@@ -96,7 +97,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
         printf("[CLIENT] App Thread: write - 4-way has triggered, return\n");
         return 0;
     }
-    
+
     // 1. increment buffer
     // 2. change state to data transmission
     pthread_mutex_lock(&info_mutex);
@@ -174,8 +175,10 @@ static void *send_thread(){
                 header = pack_header(mTCP_SYN, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 printf("[CLIENT] Send Thread: mTCP_SYN Sent\n");
             }
             else if(local_lastreceive == mTCP_SYN_ACK){
@@ -184,8 +187,10 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK, 0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 printf("[CLIENT] Send Thread: (3-way) ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
                 // wake up application thread
@@ -204,8 +209,10 @@ static void *send_thread(){
                 header = pack_header(mTCP_DATA,local_ack);
                 packet->header = header;
                 memcpy(packet->buffer,pack->buf,1000);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",strlen((const char*)pack->buf));
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
@@ -243,8 +250,10 @@ static void *send_thread(){
                 memcpy(pack->buf,packet->buffer,sizeof(packet->buffer));
                 pack->received = 0; // datapack sent, but not received
                 pthread_mutex_unlock(&info_mutex);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct
-                            sockaddr*)dest_addr,sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)pack->buf));
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
@@ -257,8 +266,10 @@ static void *send_thread(){
                 header = pack_header(mTCP_FIN,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct
-                            sockaddr *)dest_addr, sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 printf("[CLIENT] Send Thread: mTCP_FIN (re)sent\n");
             }
             else if(local_lastreceive == mTCP_FIN_ACK){
@@ -268,8 +279,10 @@ static void *send_thread(){
                 header = pack_header(mTCP_ACK,0);
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
-                sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr));
+                if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
+                        sizeof(*dest_addr))) == -1){
+                          perror("sendto: ");
+                        }
                 shutdown = 1;
                 // wake up application thread
                 pthread_mutex_lock(&app_thread_sig_mutex);
