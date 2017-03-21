@@ -27,6 +27,7 @@ int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd; //socket_fd
 int32_t read_length;
+int32_t check = 1;
 //char bufff[MAX_BUF_SIZE];
 struct sockaddr_in *dest_addr;
 /* The Sending Thread and Receive Thread Function */
