@@ -1,0 +1,591 @@
+abcsds
+sizeof mtcppacket= 1004
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 0
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 1
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 0
+[SERVER]        SEQ/ACK: 0
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: SYN received
+abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 1
+------------------------------------------
+[SERVER] Send Thread: state = 1
+[CLIENT] check: 1004[SERVER] Send Thread: SYN_ACK sent
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 0
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 1
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 4
+[SERVER]        SEQ/ACK: 0
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: ACK received
+[SERVER] App Thread: 3-way ok
+[SERVER] Receive Thread: 3-way ok
+abcsds
+sizeof mtcppacket= 1004
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 9
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 0
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 1000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#1000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 115
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 1000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 2000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#2000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 114
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 2000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 3000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#3000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 32
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 3000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 4000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#4000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 32
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 4000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 5000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#5000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 100
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 5000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 6000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#6000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 32
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 6000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 7000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#7000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 32
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 7000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 8000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#8000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 97
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 8000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 9000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#9000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 115
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 9000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 10000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#10000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 101
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 10000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 11000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#11000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 101
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 11000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 12000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#12000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 101
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 12000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 13000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#13000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 116
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 13000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 14000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#14000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 101
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 14000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 15000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#15000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 105
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 15000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 1000
+[SERVER] ACK is: 16000abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#16000) sent
+hey, read length is : 1000
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 32
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 16000
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 654
+[SERVER] ACK is: 16654abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#16654) sent
+hey, read length is : 654
+yes
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 0
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 2
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 5
+[SERVER]        SEQ/ACK: 16654
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: data received
+[SERVER] Receive Thread: buff length = 0
+[SERVER] ACK is: 16654abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 2
+------------------------------------------
+[SERVER] Send Thread: state = 2
+[CLIENT] check: 1004[SERVER] Send Thread: ACK (#16654) sent
+hey, read length is : 0
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 0
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 3
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 2
+[SERVER]        SEQ/ACK: 0
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: fin received
+abcsds
+sizeof mtcppacket= 1004
+
+------------------------------------------
+[SERVER] Send Thread Loop Started
+[SERVER] Send Thread: state = 3
+------------------------------------------
+[SERVER] Send Thread: state = 3
+[CLIENT] check: 1004[SERVER] Send Thread: FIN-ACK sent
+defgh
+[SERVER] Receive Thread: Buffer Length = 1004
+WRNM 0
+
+
+------------------------------------------
+[SERVER] Receive Thread Loop Started
+[SERVER] Receive Thread Loop: state = 3
+------------------------------------------
+[SERVER] Receive Thread: On revceiving buf:
+[SERVER]           type: 4
+[SERVER]        SEQ/ACK: 0
+[SERVER] Receive Thread: header analysis
+
+[SERVER] Receive Thread: read_l=0, pop up?
+[SERVER] Receive Thread: ACK received

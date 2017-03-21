@@ -273,11 +273,11 @@ static void *receive_thread(){
                 printf("[SERVER] Receive Thread: data received\n");
                 //printf("[SERVER] Receive Thread: data: \n%s\n",buff);
                 pthread_mutex_lock(&info_mutex);
-                printf("[SERVER] Receive Thread: buff length = %ld\n",sizeof(buff));
-                ACK=ACK+sizeof(buff);
+                printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
+                ACK=ACK+strlen(buff);
                 printf("[SERVER] ACK is: %d", ACK);
-                read_length = sizeof(buff);
-                writeSendBuff(mtcp_buffer,(unsigned char*)buff,sizeof(buff));
+                read_length = strlen(buff);
+                writeSendBuff(mtcp_buffer,(unsigned char*)buff,strlen(buff));
                 //for (i=0; i < sizeof(buff);i++){
                 //    enqueue(mtcp_buffer, buff[i]);
                 //}
