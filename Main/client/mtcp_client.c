@@ -110,6 +110,7 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     pthread_mutex_lock(&send_thread_sig_mutex);
     pthread_cond_signal(&send_thread_sig);
     pthread_mutex_unlock(&send_thread_sig_mutex);
+    printf("[CLIENT] App Thread: mbuff size = %d\n", queuesize(mtcp_buffer));
     // none-blocking write!
     // return immediately
     // how to return with error
@@ -215,9 +216,10 @@ static void *send_thread(){
                         sizeof(*dest_addr))) == -1){
                           perror("sendto: ");
                         }
+                //printf("[CLIENT] Send Thread: On Send:\n");
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
-                printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",strlen((const char*)pack->buf));
+                printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",strlen((const char*)packet->buffer));
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
             }
             // all data sent have received by server,
@@ -259,7 +261,7 @@ static void *send_thread(){
                         }
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
-                printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)pack->buf));
+                printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)packet->buffer));
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
             }
         }

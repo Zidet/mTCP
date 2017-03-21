@@ -105,7 +105,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     pthread_mutex_unlock(&info_mutex);
     printf("yes\n");
     //printf("[SERVER] App thread read_length = %ld\n", strlen(bufff));
-    printf("[BUF-CHECKING] BUF is: %s\n", buf);
+    //printf("[BUF-CHECKING] BUF is: %s\n", buf);
     return read_length;
 }
 
@@ -205,7 +205,8 @@ static void *receive_thread(){
         int32_t length = 0;
         socklen_t fromlen=sizeof(struct sockaddr_in) ;
         printf("abcsds\n");
-        length = recvfrom(sfd, received, sizeof(*received),0,
+        printf("sizeof mtcppacket= %ld\n",sizeof(mTCPPacket));
+        length = recvfrom(sfd, received, sizeof(mTCPPacket),0,
                 (struct sockaddr *)dest_addr, &fromlen);
         printf("defgh\n");
         if(length <= 0 && state != 2){
@@ -270,7 +271,7 @@ static void *receive_thread(){
             //printf("state = %d\n",state);
             if(type == mTCP_DATA){
                 printf("[SERVER] Receive Thread: data received\n");
-                printf("[SERVER] Receive Thread: data: \n%s\n",buff);
+                //printf("[SERVER] Receive Thread: data: \n%s\n",buff);
                 pthread_mutex_lock(&info_mutex);
                 printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
                 ACK=ACK+strlen(buff);
