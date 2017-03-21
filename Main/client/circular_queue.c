@@ -17,6 +17,11 @@ int isfull(QUEUE *q){
   return((q->rear+1)%BUFFSIZE==q->front);
 }
 
+int queuesize(QUEUE *q){
+        	printf("\n %d %d %d\n",BUFFSIZE,q->rear,q->front);
+        	return ((q->capacity-q->front+q->rear+1)%BUFFSIZE);
+}
+
 int enqueue(QUEUE *q, char data){
   if(isfull(q))
   {

@@ -17,6 +17,8 @@ int isempty(QUEUE*q);
 
 int isfull(QUEUE*q);
 
+int queuesize(QUEUE *q);
+
 int enqueue(QUEUE *q, char data);
 
 int dequeue(QUEUE *q);
