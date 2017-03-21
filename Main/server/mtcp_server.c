@@ -67,7 +67,7 @@ void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
 int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     // check whether buf is empty
     /*
-       if (strlen(buf)==0){
+       if (sizeof(buf)==0){
        pthread_cond_wait(&app_thread_sig, &app_thread_sig_mutex);
        }
        else{
@@ -104,7 +104,7 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     }
     pthread_mutex_unlock(&info_mutex);
     printf("yes\n");
-    //printf("[SERVER] App thread read_length = %ld\n", strlen(bufff));
+    //printf("[SERVER] App thread read_length = %ld\n", sizeof(bufff));
     //printf("[BUF-CHECKING] BUF is: %s\n", buf);
     return read_length;
 }
@@ -220,7 +220,7 @@ static void *receive_thread(){
         //memcpy(&header,buf,4);
         //memcpy(buff,buf + 4, length-4);
         //printf("[BUFFF-CHECKING] bufff is: %s", bufff);
-        //memcpy(bufff, buff, strlen(buff));
+        //memcpy(bufff, buff, sizeof(buff));
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
@@ -273,12 +273,12 @@ static void *receive_thread(){
                 printf("[SERVER] Receive Thread: data received\n");
                 //printf("[SERVER] Receive Thread: data: \n%s\n",buff);
                 pthread_mutex_lock(&info_mutex);
-                printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
-                ACK=ACK+strlen(buff);
+                printf("[SERVER] Receive Thread: buff length = %ld\n",sizeof(buff));
+                ACK=ACK+sizeof(buff);
                 printf("[SERVER] ACK is: %d", ACK);
-                read_length = strlen(buff);
-                writeSendBuff(mtcp_buffer,(unsigned char*)buff,strlen(buff));
-                //for (i=0; i < strlen(buff);i++){
+                read_length = sizeof(buff);
+                writeSendBuff(mtcp_buffer,(unsigned char*)buff,sizeof(buff));
+                //for (i=0; i < sizeof(buff);i++){
                 //    enqueue(mtcp_buffer, buff[i]);
                 //}
                 pthread_mutex_unlock(&info_mutex);

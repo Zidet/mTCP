@@ -219,7 +219,7 @@ static void *send_thread(){
                 //printf("[CLIENT] Send Thread: On Send:\n");
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
-                printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",strlen((const char*)packet->buffer));
+                printf("[CLIENT] Send Thread: data (Length: %ld) resent\n",sizeof((const char*)packet->buffer));
                 printf("[CLIENT] Send Thread: data (SEQ: %d) resent\n",local_ack);
             }
             // all data sent have received by server,
@@ -261,7 +261,7 @@ static void *send_thread(){
                         }
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
-                printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)packet->buffer));
+                printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",sizeof((const char*)packet->buffer));
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
             }
         }
