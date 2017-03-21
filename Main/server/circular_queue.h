@@ -3,7 +3,7 @@
 #define __CIRCULAR_QUEUE__
 
 
-#define BUFFSIZE 1024*8
+#define BUFFSIZE 8192
 
 typedef struct queue{
   int front;
