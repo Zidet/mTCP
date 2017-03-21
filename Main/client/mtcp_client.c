@@ -99,12 +99,17 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
         return 0;
     }
 
+    pthread_mutex_lock(&info_mutex);
+    int qsize = queuesize(mtcp_buffer);
+    pthread_mutex_unlock(&info_mutex);
+    printf("[CLIENT] App Thread: BEFORE WRITE - SLEEP mbuff size = %d\n", qsize);
     // if queuesize overflow, wait
-    if((queuesize(mtcp_buffer) + buf_len) > BUFFSIZE){
+    if((qsize + buf_len) >= BUFFSIZE-1000){
         pthread_mutex_lock(&info_mutex);
         blen = buf_len;
         bfull = 1;
         pthread_mutex_unlock(&info_mutex);
+        printf("[CLIENT] App Thread: SLEEP mbuff size = %d\n", queuesize(mtcp_buffer));
 
         // wait until buffer has enough space
         pthread_mutex_lock(&app_thread_sig_mutex);
@@ -118,7 +123,6 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
     writeSendBuff(mtcp_buffer,buf,buf_len);
     state = 2;
     all_sent = 0;
-    bfull = 0;
     //pack->received = 0; //the datapack is not received yet obv
     pthread_mutex_unlock(&info_mutex);
     // wake up send thread
@@ -281,13 +285,22 @@ static void *send_thread(){
                 // check if enough space in mtcp_buffer
                 // if yes, wake up write
                 pthread_mutex_lock(&info_mutex);
-                if(bfull == 1 && (blen + queuesize(mtcp_buffer)) < BUFFSIZE){
+                int qsize = queuesize(mtcp_buffer);
+                pthread_mutex_unlock(&info_mutex);
+                if(bfull == 1 && ((qsize+ blen) < BUFFSIZE-1000)){
                     // wake up application thread
                     pthread_mutex_lock(&app_thread_sig_mutex);
                     pthread_cond_signal(&app_thread_sig);
                     pthread_mutex_unlock(&app_thread_sig_mutex);
+                    // update bfull - enough buffer now
+                    pthread_mutex_lock(&info_mutex);
+                    bfull = 0;
+                    pthread_mutex_unlock(&info_mutex);
+                    // wait the buffer read is done
+                    pthread_mutex_lock(&send_thread_sig_mutex);
+                    pthread_cond_wait(&send_thread_sig, &send_thread_sig_mutex);
+                    pthread_mutex_unlock(&send_thread_sig_mutex);
                 }
-                pthread_mutex_unlock(&info_mutex);
             }
         }
         else if(state == 3){
@@ -323,7 +336,6 @@ static void *send_thread(){
                 pthread_mutex_unlock(&app_thread_sig_mutex);
                 printf("[CLIENT] Send Thread: FIN_ACK received, ACK sent\n");
                 printf("[CLIENT] Send Thread: shutdown done\n");
-
             }
         }
         free(packet);
