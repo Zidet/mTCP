@@ -37,6 +37,7 @@ int32_t lastreceive = -1;
 int32_t sfd;  // socket_fd
 int32_t all_sent = 0;
 int32_t check = 1;
+int32_t blen = 0, bfull = 0;
 struct sockaddr_in *dest_addr; // server addr
 
 struct send_pack{
@@ -98,12 +99,26 @@ int mtcp_write(int socket_fd, unsigned char *buf, int buf_len){
         return 0;
     }
 
+    // if queuesize overflow, wait
+    if((queuesize(mtcp_buffer) + buf_len) > BUFFSIZE){
+        pthread_mutex_lock(&info_mutex);
+        blen = buf_len;
+        bfull = 1;
+        pthread_mutex_unlock(&info_mutex);
+
+        // wait until buffer has enough space
+        pthread_mutex_lock(&app_thread_sig_mutex);
+        pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
+        pthread_mutex_unlock(&app_thread_sig_mutex);
+    }
+
     // 1. increment buffer
     // 2. change state to data transmission
     pthread_mutex_lock(&info_mutex);
     writeSendBuff(mtcp_buffer,buf,buf_len);
     state = 2;
     all_sent = 0;
+    bfull = 0;
     //pack->received = 0; //the datapack is not received yet obv
     pthread_mutex_unlock(&info_mutex);
     // wake up send thread
@@ -177,9 +192,9 @@ static void *send_thread(){
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: mTCP_SYN Sent\n");
             }
@@ -190,9 +205,9 @@ static void *send_thread(){
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: (3-way) ACK sent\n");
                 printf("[CLIENT] Send Thread: 3-way ok\n");
@@ -213,9 +228,9 @@ static void *send_thread(){
                 packet->header = header;
                 memcpy(packet->buffer,pack->buf,1000);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 //printf("[CLIENT] Send Thread: On Send:\n");
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
@@ -256,13 +271,23 @@ static void *send_thread(){
                 pack->received = 0; // datapack sent, but not received
                 pthread_mutex_unlock(&info_mutex);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 printf("[CLIENT] check: %d",check);
                 //printf("[CLIENT] Send Thread: data to sent: %s\n\n",packet->buffer);
                 printf("[CLIENT] Send Thread: New data (Length: %ld) sent\n",strlen((const char*)packet->buffer));
                 printf("[CLIENT] Send Thread: New data (SEQ: %d) sent\n",local_ack);
+                // check if enough space in mtcp_buffer
+                // if yes, wake up write
+                pthread_mutex_lock(&info_mutex);
+                if(bfull == 1 && (blen + queuesize(mtcp_buffer)) < BUFFSIZE){
+                    // wake up application thread
+                    pthread_mutex_lock(&app_thread_sig_mutex);
+                    pthread_cond_signal(&app_thread_sig);
+                    pthread_mutex_unlock(&app_thread_sig_mutex);
+                }
+                pthread_mutex_unlock(&info_mutex);
             }
         }
         else if(state == 3){
@@ -273,9 +298,9 @@ static void *send_thread(){
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 printf("[CLIENT] check: %d",check);
                 printf("[CLIENT] Send Thread: mTCP_FIN (re)sent\n");
             }
@@ -287,9 +312,9 @@ static void *send_thread(){
                 packet->header = header;
                 memset(packet->buffer, 0,1000);
                 if((check = sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
-                        sizeof(*dest_addr))) == -1){
-                          perror("sendto: ");
-                        }
+                                sizeof(*dest_addr))) == -1){
+                    perror("sendto: ");
+                }
                 printf("[CLIENT] check: %d",check);
                 shutdown = 1;
                 // wake up application thread
@@ -302,100 +327,100 @@ static void *send_thread(){
             }
         }
         free(packet);
+        }
+        pthread_exit(0);
     }
-    pthread_exit(0);
-}
 
-static void *receive_thread(){
-    int32_t shutdown = 0;
-    int32_t local_seq = -1;
-    // local buffer for receive thread
-    // it should be the received mtcp packet
-    // unsigned char buf[MAX_BUF_SIZE];
-    // local buffer for header, type and rest(ACK/SEQ)
-    mTCPHeader header = 0;
-    int32_t type = -1; int32_t rest = -1;
-    while(!shutdown){
-        mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
-        int32_t length;
-        //memset(buf, 0, MAX_BUF_SIZE);
-        socklen_t fromlen = sizeof(*dest_addr);
-        length = recvfrom(sfd,  received, sizeof(mTCPPacket),0,
-                (struct sockaddr *)dest_addr, &fromlen);
-        if(length <= 0){
-            continue;
-            fprintf(stderr,"Error on receiving data\n");
-        }
-        // get the hearder and unpack
-        //memcpy(&header,buf,4);
-        header = received->header;
-        unpack_header(&header, &type, &rest);
-
-        printf("\n------------------------------------------\n");
-        printf("[CLIENT] Receive Thread Loop Started\n");
-        printf("[CLIENT] Receive Thread Loop: state = %d\n",state);
-        printf("------------------------------------------\n");
-
-        printf("[CLIENT] Receive Thread: On revceiving buf:\n");
-        printf("[CLIENT]           type: %d\n", type);
-        printf("[CLIENT]        SEQ/ACK: %d\n", rest);
-        printf("[CLIENT] Receive Thread: header analysis\n\n");
-
-
-        pthread_mutex_lock(&info_mutex);
-        lastreceive = type;
-        ACK = rest;
-        local_seq = SEQ;
-        pthread_mutex_unlock(&info_mutex);
-
-        if(state == -1){
-            fprintf(stderr,"State not updated I bet");
-        }
-        printf("[CLIENT] Receive Thread: ACK = %d\n", ACK);
-        printf("[CLIENT] Receive Thread: data received, start analyzing state\n");
-        printf("[CLIENT] Receive Thread: state = %d\n", state);
-        if(state == 1){ // 3-way handshake
-            // unpack header
-            if(type == mTCP_SYN_ACK){
-                // if SYN_ACK received, wake up send thread
-                pthread_mutex_lock(&send_thread_sig_mutex);
-                pthread_cond_signal(&send_thread_sig);
-                pthread_mutex_unlock(&send_thread_sig_mutex);
-                printf("[CLIENT] Receive Thread: SYN_ACK Received, switch to send thread\n");
-            }else{
-                fprintf(stderr,"Error on 3-way handshake\n");
+    static void *receive_thread(){
+        int32_t shutdown = 0;
+        int32_t local_seq = -1;
+        // local buffer for receive thread
+        // it should be the received mtcp packet
+        // unsigned char buf[MAX_BUF_SIZE];
+        // local buffer for header, type and rest(ACK/SEQ)
+        mTCPHeader header = 0;
+        int32_t type = -1; int32_t rest = -1;
+        while(!shutdown){
+            mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
+            int32_t length;
+            //memset(buf, 0, MAX_BUF_SIZE);
+            socklen_t fromlen = sizeof(*dest_addr);
+            length = recvfrom(sfd,  received, sizeof(mTCPPacket),0,
+                    (struct sockaddr *)dest_addr, &fromlen);
+            if(length <= 0){
+                continue;
+                fprintf(stderr,"Error on receiving data\n");
             }
-        }
-        else if(state == 2){ // data transmission
-            if(type == mTCP_ACK && rest > local_seq){
-                // if ACK received,
-                // update the datapack to marked it received
-                // and TODO: try to get new data
-                pthread_mutex_lock(&info_mutex);
-                pack->received = 1;
-                pthread_mutex_unlock(&info_mutex);
+            // get the hearder and unpack
+            //memcpy(&header,buf,4);
+            header = received->header;
+            unpack_header(&header, &type, &rest);
 
-                // wake up send thread and send new data
-                // note that seq is changed in send thread to for maintanence
-                pthread_mutex_lock(&send_thread_sig_mutex);
-                pthread_cond_signal(&send_thread_sig);
-                pthread_mutex_unlock(&send_thread_sig_mutex);
-                printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
+            printf("\n------------------------------------------\n");
+            printf("[CLIENT] Receive Thread Loop Started\n");
+            printf("[CLIENT] Receive Thread Loop: state = %d\n",state);
+            printf("------------------------------------------\n");
+
+            printf("[CLIENT] Receive Thread: On revceiving buf:\n");
+            printf("[CLIENT]           type: %d\n", type);
+            printf("[CLIENT]        SEQ/ACK: %d\n", rest);
+            printf("[CLIENT] Receive Thread: header analysis\n\n");
+
+
+            pthread_mutex_lock(&info_mutex);
+            lastreceive = type;
+            ACK = rest;
+            local_seq = SEQ;
+            pthread_mutex_unlock(&info_mutex);
+
+            if(state == -1){
+                fprintf(stderr,"State not updated I bet");
             }
-        }
-        else if(state == 3){// 4-way handshake
-            if(type == mTCP_FIN_ACK){
-                // if FIN_ACK received, wake up send thread for termination
-                // terminate the thread
-                pthread_mutex_lock(&send_thread_sig_mutex);
-                pthread_cond_signal(&send_thread_sig);
-                pthread_mutex_unlock(&send_thread_sig_mutex);
-                shutdown = 1;
-                printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
-                printf("[CLIENT] Receive Thread: shutdown\n");
+            printf("[CLIENT] Receive Thread: ACK = %d\n", ACK);
+            printf("[CLIENT] Receive Thread: data received, start analyzing state\n");
+            printf("[CLIENT] Receive Thread: state = %d\n", state);
+            if(state == 1){ // 3-way handshake
+                // unpack header
+                if(type == mTCP_SYN_ACK){
+                    // if SYN_ACK received, wake up send thread
+                    pthread_mutex_lock(&send_thread_sig_mutex);
+                    pthread_cond_signal(&send_thread_sig);
+                    pthread_mutex_unlock(&send_thread_sig_mutex);
+                    printf("[CLIENT] Receive Thread: SYN_ACK Received, switch to send thread\n");
+                }else{
+                    fprintf(stderr,"Error on 3-way handshake\n");
+                }
             }
+            else if(state == 2){ // data transmission
+                if(type == mTCP_ACK && rest > local_seq){
+                    // if ACK received,
+                    // update the datapack to marked it received
+                    // and TODO: try to get new data
+                    pthread_mutex_lock(&info_mutex);
+                    pack->received = 1;
+                    pthread_mutex_unlock(&info_mutex);
+
+                    // wake up send thread and send new data
+                    // note that seq is changed in send thread to for maintanence
+                    pthread_mutex_lock(&send_thread_sig_mutex);
+                    pthread_cond_signal(&send_thread_sig);
+                    pthread_mutex_unlock(&send_thread_sig_mutex);
+                    printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
+                }
+            }
+            else if(state == 3){// 4-way handshake
+                if(type == mTCP_FIN_ACK){
+                    // if FIN_ACK received, wake up send thread for termination
+                    // terminate the thread
+                    pthread_mutex_lock(&send_thread_sig_mutex);
+                    pthread_cond_signal(&send_thread_sig);
+                    pthread_mutex_unlock(&send_thread_sig_mutex);
+                    shutdown = 1;
+                    printf("[CLIENT] Receive Thread: ACK Received, switch to send thread\n");
+                    printf("[CLIENT] Receive Thread: shutdown\n");
+                }
+            }
+            free(received);
         }
-        free(received);
+        pthread_exit(0);
     }
-    pthread_exit(0);
-}
