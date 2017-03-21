@@ -4,7 +4,7 @@ LDFLAGS=-lpthread -lrt
 
 EXE = server
 
-OBJ = server.o mtcp_server.o mtcp_common.o
+OBJ = server.o mtcp_server.o circular_queue.o mtcp_common.o
 
 ${EXE}: ${OBJ}
 	${CC} ${CFLAGS} -o ${EXE} ${OBJ} ${LDFLAGS}

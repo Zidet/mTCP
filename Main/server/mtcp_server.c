@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "mtcp_server.h"
 #include "mtcp_common.h"
+#include "circular_queue.h"
 
 /* ThreadID for Sending Thread and Receiving Thread */
 static pthread_t send_thread_pid;
@@ -26,15 +27,18 @@ int32_t ACK = 0;
 int32_t lastreceive = -1;
 int32_t sfd; //socket_fd
 int32_t read_length;
-char bufff[MAX_BUF_SIZE];
+//char bufff[MAX_BUF_SIZE];
 struct sockaddr_in *dest_addr;
 /* The Sending Thread and Receive Thread Function */
 static void *send_thread();
 static void *receive_thread();
+//recving buffer
+QUEUE* mtcp_buffer=NULL;
 
 void mtcp_accept(int socket_fd, struct sockaddr_in *server_addr){
     //3-way-handshake
     pthread_mutex_lock(&info_mutex);
+    mtcp_buffer=(QUEUE*) createqueue();
     dest_addr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
     sfd = socket_fd;
     memcpy(dest_addr,server_addr,sizeof(struct sockaddr_in));
@@ -69,10 +73,16 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
        fprintf(stderr, "Buffer is not empty\n");
        }
        */
+    // if 4-way has been triggered, return 0
+    if(state == 3 && isempty(mtcp_buffer)){
+        printf("[SERVER] App Thread: 4-way has triggered and nothing received here\n");
+        return 0;
+    }
     //change state to data transmission
+    int i = 0;
     pthread_mutex_lock(&info_mutex);
     sfd=socket_fd;
-    memset(bufff,0,MAX_BUF_SIZE);
+    //memset(bufff,0,MAX_BUF_SIZE);
     state=2;
     pthread_mutex_unlock(&info_mutex);
     //wait until data transmission success
@@ -80,12 +90,24 @@ int mtcp_read(int socket_fd, unsigned char *buf, int buf_len){
     pthread_cond_wait(&app_thread_sig,&app_thread_sig_mutex);
     pthread_mutex_unlock(&app_thread_sig_mutex);
     //wake up
+
+    printf("hey, read length is : %d\n",read_length);
+    // when read if the buffer is empty then return 0
+    if(read_length == 0)
+        return 0;
+
     //read data from the receive buffer
-    memcpy(buf, bufff, strlen(bufff));
-    printf("[SERVER] App thread read_length = %ld\n", strlen(bufff)); 
+    pthread_mutex_lock(&info_mutex);
+    for(i = 0;i<read_length;i++){
+        buf[i] = dequeue(mtcp_buffer);
+    }
+    pthread_mutex_unlock(&info_mutex);
+    printf("yes\n");
+    //printf("[SERVER] App thread read_length = %ld\n", strlen(bufff)); 
     printf("[BUF-CHECKING] BUF is: %s\n", buf);
-    return strlen(bufff);
+    return read_length;
 } 
+
 void mtcp_close(int socket_fd){
     //change state to 4-way
     pthread_mutex_lock(&info_mutex);
@@ -133,8 +155,8 @@ static void *send_thread(){
             // send ACK packet out
             header=pack_header(mTCP_ACK, local_ack);
             packet->header=header;
-            pthread_mutex_lock(&info_mutex);
-            pthread_mutex_unlock(&info_mutex);
+            //pthread_mutex_lock(&info_mutex);
+            //pthread_mutex_unlock(&info_mutex);
             memset(packet->buffer, 0, 1000);
 
             sendto(sfd, (void*)packet, sizeof(*packet), 0, (struct sockaddr*)dest_addr,
@@ -161,19 +183,19 @@ static void *send_thread(){
 
 static void *receive_thread(){
     int32_t shutdown = 0;
-    char buf[MAX_BUF_SIZE];
-    char buff[MAX_BUF_SIZE];
-    memset(buf,0,MAX_BUF_SIZE);
+    //char buf[MAX_BUF_SIZE];
+    char buff[MAX_BUF_SIZE]; // thread buffer
+    //memset(buf,0,MAX_BUF_SIZE);
     memset(buff,0,MAX_BUF_SIZE);
     //int32_t local_seq=-1;
     mTCPHeader header = 0;
     int32_t type = -1; int32_t rest = -1;
     while(!shutdown){
-        //mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
-        int32_t length;
+        mTCPPacket *received = (mTCPPacket*)malloc(sizeof(mTCPPacket));
+        int32_t length = 0;
         socklen_t fromlen=sizeof(struct sockaddr_in) ;
         printf("abcsds\n");
-        length = recvfrom(sfd, buf, MAX_BUF_SIZE,0,
+        length = recvfrom(sfd, received, sizeof(*received),0,
                 (struct sockaddr *)dest_addr, &fromlen);
         printf("defgh\n");
         if(length <= 0 && state != 2){
@@ -181,10 +203,13 @@ static void *receive_thread(){
             continue;
         }
         printf("[SERVER] Receive Thread: Buffer Length = %d\n",length);
-        memcpy(&header,buf,4);
-        memcpy(buff,buf + 4, length-4);
-        printf("[BUFFF-CHECKING] bufff is: %s", bufff);
-        memcpy(bufff, buff, strlen(buff));
+        header = received -> header;
+        memcpy(buff, received -> buffer,1000);
+        printf("WRNM %d\n\n",buff[0]);
+        //memcpy(&header,buf,4);
+        //memcpy(buff,buf + 4, length-4);
+        //printf("[BUFFF-CHECKING] bufff is: %s", bufff);
+        //memcpy(bufff, buff, strlen(buff));
         unpack_header(&header, &type, &rest);
         printf("\n------------------------------------------\n");
         printf("[SERVER] Receive Thread Loop Started\n");
@@ -198,11 +223,14 @@ static void *receive_thread(){
         printf("[SERVER] Receive Thread: header analysis\n\n");
 
         pthread_mutex_lock(&info_mutex);
+        read_length = 0;
         lastreceive = type;
         ACK=rest;
-        //local_seq=SEQ;
         pthread_mutex_unlock(&info_mutex);
-        printf("[SERVER] Receive Thread: state = %d\n", state);
+
+        printf("[SERVER] Receive Thread: read_l=%d, pop up?\n",read_length);
+
+        //printf("[SERVER] Receive Thread: state = %d\n", state);
         if(state == -1){
             fprintf(stderr,"State not updated I bet");
             continue;
@@ -236,6 +264,12 @@ static void *receive_thread(){
                 pthread_mutex_lock(&info_mutex);
                 printf("[SERVER] Receive Thread: buff length = %ld\n",strlen(buff));
                 ACK=ACK+strlen(buff);
+                printf("[SERVER] ACK is: %d", ACK);
+                read_length = strlen(buff);
+                writeSendBuff(mtcp_buffer,(unsigned char*)buff,strlen(buff));
+                //for (i=0; i < strlen(buff);i++){
+                //    enqueue(mtcp_buffer, buff[i]);
+                //}
                 pthread_mutex_unlock(&info_mutex);
                 //wake up sending thread
                 pthread_mutex_lock(&send_thread_sig_mutex);
@@ -268,7 +302,8 @@ static void *receive_thread(){
             }
             continue;
         }
-        //free(received);
+        free(received);
     }
     pthread_exit(0);
 }
+
